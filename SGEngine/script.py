@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from typing import Callable
-from lib.gameobject import *
+from SGEngine.gameobject import *
 
 class Script(Component):
     def __init__(self):

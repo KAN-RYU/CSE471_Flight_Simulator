@@ -1,8 +1,8 @@
 import numpy as np
 from typing import Tuple
-from lib.gameobject import *
-from lib.gameobject import ComponentType, GameObject
-from lib.quaternion import *
+from SGEngine.gameobject import *
+from SGEngine.gameobject import ComponentType, GameObject
+from SGEngine.quaternion import *
 
 class RigidBody(Component):
     def __init__(self, 

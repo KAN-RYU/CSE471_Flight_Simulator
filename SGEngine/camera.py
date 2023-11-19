@@ -1,5 +1,5 @@
 import numpy as np
-from lib.gameobject import *
+from SGEngine.gameobject import *
 
 class Camera(Component):
     def __init__(self, fov=45, up=np.array([0, 1, 0]), near=0.1, far=100):

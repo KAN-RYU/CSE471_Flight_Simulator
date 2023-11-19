@@ -5,7 +5,7 @@ from OpenGL.GLU import *
 from OpenGL.GLUT import *
 from typing import Callable
 import numpy as np
-from lib.quaternion import *
+from SGEngine.quaternion import *
 from enum import Enum
 
 class ComponentType(Enum):
@@ -46,7 +46,7 @@ class GameObject:
             [1, 0, 0, self.position[0]],
             [0, 1, 0, self.position[1]],
             [0, 0, 1, self.position[2]],
-            [0, 0, 0, 1]
+            [0, 0, 0, 1               ]
         ])
     
     def getRotationMat(self):
@@ -54,10 +54,10 @@ class GameObject:
     
     def getScaleMat(self):
         return np.array([
-            [self.scale[0], 0, 0, 0],
-            [0, self.scale[1], 0, 0],
-            [0, 0, self.scale[2], 0],
-            [0, 0, 0, 1]
+            [self.scale[0], 0,             0,             0],
+            [0,             self.scale[1], 0,             0],
+            [0,             0,             self.scale[2], 0],
+            [0,             0,             0,             1]
         ])
     
     def getLocalMat(self):
@@ -185,10 +185,12 @@ class Cube(GameObject):
         super().__init__(position, rotation, scale)
 
     def drawSelf(self):
+        glColor3f(1.0, 0.0, 0.0)
         glPushMatrix()
         glMultMatrixd(self.worldMat.T)
         glutSolidCube(1)
         glPopMatrix()
+        glColor3f(1.0, 1.0, 1.0)
 
 class Sphere(GameObject):
     def __init__(self, position, rotation, scale):

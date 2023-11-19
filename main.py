@@ -1,14 +1,14 @@
-from lib.scene import Scene
-from lib.gameobject import *
-from lib.camera import Camera
-from lib.rigidbody import RigidBody
-from lib.quaternion import *
+from SGEngine.scene import Scene
+from SGEngine.gameobject import *
+from SGEngine.camera import Camera
+from SGEngine.rigidbody import RigidBody
+from SGEngine.quaternion import *
 from scripts.fps import FPSController
 from scripts.airplane import AirplaneController
 import numpy as np
 
 if __name__ == "__main__":
-    mainScene = Scene(800, 600)
+    mainScene = Scene(1280, 720)
     cube = Cube(position=np.array([0, 0.5, 0]), rotation=np.array([0, 0, 0]))
     rb = RigidBody(inertia=np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]]))
     rb.hasGravity = False

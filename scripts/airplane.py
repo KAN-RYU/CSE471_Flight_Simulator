@@ -1,7 +1,7 @@
-from lib.gameobject import *
-from lib.rigidbody import RigidBody
-from lib.script import Script
-from lib.quaternion import *
+from SGEngine.gameobject import *
+from SGEngine.rigidbody import RigidBody
+from SGEngine.script import Script
+from SGEngine.quaternion import *
 import numpy as np
 
 def calculateDragCoef(x):

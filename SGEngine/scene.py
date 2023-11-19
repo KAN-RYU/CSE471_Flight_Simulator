@@ -3,8 +3,8 @@ from OpenGL.GLU import *
 from OpenGL.GLUT import *
 import numpy as np
 import time as t
-from lib.gameobject import *
-from lib.camera import Camera
+from SGEngine.gameobject import *
+from SGEngine.camera import Camera
 
 class Scene:
     time = 0

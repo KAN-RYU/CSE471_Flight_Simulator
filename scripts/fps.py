@@ -1,7 +1,7 @@
 from OpenGL.GLUT import *
 import numpy as np
-from lib.script import *
-from lib.quaternion import *
+from SGEngine.script import *
+from SGEngine.quaternion import *
 
 class FPSController(Script):
     def __init__(self):
