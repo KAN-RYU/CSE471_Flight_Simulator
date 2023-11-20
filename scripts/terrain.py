@@ -47,12 +47,24 @@ def generate_fractal_noise_2d(shape, res, octaves=1, persistence=0.5):
 End here
 """
 
-def apply_gradient_map(noise: np.ndarray, rate=0.5):
+def apply_gradient_map(noise: np.ndarray, rate=0.5) -> np.ndarray:
     x, y = np.meshgrid(np.linspace(-1, 1, noise.shape[0]), np.linspace(-1, 1, noise.shape[1]))
     d = np.sqrt(x**2 + y**2)
     mu = 0
     g = np.exp(-((d-mu)**2 / (2.0*rate**2)))
     return (noise + g)-0.5
+
+def get_terrain_vertices_array(noise: np.ndarray) -> np.ndarray:
+    size = noise.shape[0]
+    center = size // 2
+    x = np.linspace(-center, center-1, size, dtype='float32')
+    x = np.hstack([x]*size)
+    z = np.linspace(-center, center-1, size, dtype='float32')
+    z = np.vstack([z.T]*size).flatten()
+    y = noise.flatten()
+    result = np.vstack([x, y, z]).flatten('F')
+    return result
+    
 
 if __name__ == "__main__":
     np.random.seed(int(time()))
@@ -60,6 +72,7 @@ if __name__ == "__main__":
     r = 8
     noise = generate_fractal_noise_2d(shape=(size, size), res=(r, r), octaves=5, persistence=0.5)
     noise = apply_gradient_map(noise, rate=0.3)
+    get_terrain_vertices_array(noise)
     plt.imshow(noise, cmap='terrain', vmin=-0.8, vmax=0.8)
     plt.colorbar()
     plt.show()
