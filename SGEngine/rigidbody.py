@@ -66,10 +66,10 @@ class RigidBody(Component):
         self.angular_velocity += np.cross(point - self.position, impulse) / self.inertia
 
     def applyRelativeTorque(self, torque):
-        self.torque += torque
+        self.torque += self.object.getLocalVec(torque)
     
     def applyRelativeTorqueStep(self, torque):
-        delta_angular_velocity = self.inverse_inertia @ torque
+        delta_angular_velocity = self.inverse_inertia @ self.object.getLocalVec(torque)
         self.angular_velocity += delta_angular_velocity
 
         quaternion_rate = Quaternion(0, *self.angular_velocity) * self.rotation
