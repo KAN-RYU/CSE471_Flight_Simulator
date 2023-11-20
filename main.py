@@ -22,7 +22,7 @@ if __name__ == "__main__":
     # plane = Plane(scale=np.array([10000, 1, 10000]))
     camera_obj = GameObject(position=np.array([-128, 64, -128]), rotation=np.array([np.pi/8, np.pi/4, 0]))
     camera_obj.addComponent(Camera(far = 256))
-    # camera_obj.addComponent(FPSController())
+    camera_obj.addComponent(FPSController())
     # cube.addChild(camera_obj)
     mainScene.setCamera(camera_obj)
     mainScene.addObject(camera_obj)
