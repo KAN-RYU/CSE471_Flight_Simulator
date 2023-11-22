@@ -71,7 +71,6 @@ class Scene:
         glViewport(0, 0, w, h)
         glutReshapeWindow(w, h)
 
-        glutPostRedisplay()
 
     def mouse(self, button, state, x, y):
         """
@@ -82,7 +81,6 @@ class Scene:
         for obj in self.objects:
             obj.mouse(button, state, x, y)
 
-        glutPostRedisplay()
 
     def motion(self, x, y):
         """
@@ -93,7 +91,6 @@ class Scene:
         for obj in self.objects:
             obj.motion(x, y)
 
-        glutPostRedisplay()
 
     def mouseMove(self, x, y):
         """
@@ -104,7 +101,6 @@ class Scene:
         for obj in self.objects:
             obj.mouseMove(x, y)
 
-        glutPostRedisplay()
 
     def keyboard(self, key, x, y):
         """
@@ -121,7 +117,6 @@ class Scene:
         for obj in self.objects:
             obj.keyboard(key, x, y)
         
-        glutPostRedisplay()
 
     def keyboardup(self, key, x, y):
         """
@@ -132,7 +127,6 @@ class Scene:
         for obj in self.objects:
             obj.keyboardUp(key, x, y)
 
-        glutPostRedisplay()
 
     def special(self, key, x, y):
         """
@@ -140,7 +134,6 @@ class Scene:
         """
         # print(f"Display #{glutGetWindow()} special key event: key={key}, x={x}, y={y}")    
 
-        glutPostRedisplay()
 
     def update(self, dt):
         """

@@ -53,8 +53,8 @@ class AirplaneController(Script):
         self.flapsAoaBias = 5
         self.airBrakeEnabled = False
         self.flapsEnabled = False
-        self.turnSpeed = np.array([60, 30, 270])
-        self.turnAcceleration = np.array([60, 30, 540])
+        self.turnSpeed = np.array([60, 30, 60])
+        self.turnAcceleration = np.array([60, 30, 60])
 
         self.velocity = np.zeros(3)
         self.lastVelocity = np.zeros(3)
@@ -73,7 +73,7 @@ class AirplaneController(Script):
             self.rb = rb
 
     def Update(self, gameObject: GameObject, dt: float):
-        print(self.object.position)
+        # print(self.object.position)
         self.CalculateState(dt)
         self.CalculateAoA()
         self.calculateGForce(dt)
@@ -117,7 +117,7 @@ class AirplaneController(Script):
             self.airBrakeEnabled = False
 
     def CalculateState(self, dt):
-        rotationMat = Quaternion.to_rotation_matrix(self.rb.rotation)
+        rotationMat = self.rb.rotation.to_rotation_matrix()
         invRotationMat = np.linalg.inv(rotationMat)
         self.localVelocity = (invRotationMat @ np.append(self.rb.velocity, [0]))[:3]
         self.localAngularVelocity = (invRotationMat @ np.append(self.rb.angular_velocity, [0]))[:3]
@@ -132,7 +132,7 @@ class AirplaneController(Script):
         self.aoa_yaw = np.arctan2(self.localVelocity[0], self.localVelocity[2])
 
     def calculateGForce(self, dt):
-        rotationMat = Quaternion.to_rotation_matrix(self.rb.rotation)
+        rotationMat = self.rb.rotation.to_rotation_matrix()
         invRotationMat = np.linalg.inv(rotationMat)
         acceleration = (self.velocity - self.lastVelocity) / dt
         self.localGForce = (invRotationMat @ np.append(acceleration, [0]))[:3]
