@@ -76,7 +76,7 @@ class GameObject:
         self.needUpdate = False
 
     def getLocalVec(self, vec):
-        return (self.getLocalMat() @ np.append(vec, 0))[:3]
+        return (self.worldMat @ np.append(vec, 0))[:3]
 
     def translate(self, translation):
         self.position = self.position + self.getLocalVec(translation)

@@ -73,7 +73,7 @@ class AirplaneController(Script):
             self.rb = rb
 
     def Update(self, gameObject: GameObject, dt: float):
-        # print(self.object.position)
+        print(self.object.position)
         self.CalculateState(dt)
         self.CalculateAoA()
         self.calculateGForce(dt)
@@ -165,7 +165,7 @@ class AirplaneController(Script):
         return np.min([np.max([error, -accel]), accel])
 
     def updateThrust(self):
-        self.rb.applyRelativeForce(np.array([0, 0, self.zInput * 10000]))
+        self.rb.applyRelativeForce(np.array([0, 0, -self.zInput * 10000]))
 
     def updateDrag(self):
         lv = self.localVelocity
@@ -209,7 +209,7 @@ class AirplaneController(Script):
         speed = np.max([0, self.localVelocity[2]])
         steeringPower = calculateSteeringCoef(speed)
 
-        targetAV = np.array([self.vInput, self.hInput, -self.rollInput] * self.turnSpeed * steeringPower)
+        targetAV = np.array([-self.vInput, -self.hInput, -self.rollInput] * self.turnSpeed * steeringPower)
         av = np.rad2deg(self.localAngularVelocity)
 
         correction = np.array([self.calculateSteering(dt, av[0], targetAV[0], self.turnAcceleration[0] * steeringPower),

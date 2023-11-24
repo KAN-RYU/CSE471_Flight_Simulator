@@ -22,9 +22,9 @@ class FPSController(Script):
 
     def Keyboard(self, gameObject: GameObject, key: int, x: int, y: int):
         if key == b'w':
-            self.vInput = 1
-        if key == b's':
             self.vInput = -1
+        if key == b's':
+            self.vInput = 1
         if key == b'a':
             self.hInput = -1
         if key == b'd':
@@ -41,12 +41,12 @@ class FPSController(Script):
             self.prev_x = x
             self.prev_y = y
         dx = x - self.prev_x
-        dy = y - self.prev_y
+        dy = self.prev_y - y
         self.prev_x = x
         self.prev_y = y
         
         # camera rotation
-        r = Quaternion.from_axis_angle(np.array([0, 1, 0]), dx * self.sensitivity) * gameObject.rotation
+        r = Quaternion.from_axis_angle(np.array([0, 1, 0]), -dx * self.sensitivity) * gameObject.rotation
         r = r * Quaternion.from_axis_angle(np.array([1, 0, 0]), dy * self.sensitivity)
         r.normalize()
         
