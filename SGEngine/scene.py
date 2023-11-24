@@ -173,7 +173,6 @@ class Scene:
         # initialize
         for obj in self.objects:
             obj.init()
-        self.model = Model("models/14082_WWII_Plane_Japan_Kawasaki_Ki-61_v1_L2.obj")
 
         glutDisplayFunc(self.display)
         glutReshapeFunc(self.reshape)
