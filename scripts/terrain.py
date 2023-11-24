@@ -75,14 +75,12 @@ def get_terrain_vertices_array(noise: np.ndarray, height: float) -> np.ndarray:
     y = noise.flatten()
     minY = np.min(y)
     y = (y+minY) * height - minY
-    result = np.vstack([x, y, z]).flatten('F')
+    result = np.vstack([x, y, z]).flatten('F') * 10
     return result
 
 def get_terrain_normal_array(vertices: np.ndarray) -> np.ndarray:
     result = np.zeros(vertices.shape, dtype='float32')
     size = int(np.sqrt(vertices.shape[0]/3))
-    print(vertices.shape)
-    print(size)
     n = (size-1)
     for i in tqdm(range(n)):
         for j in range(n):
@@ -93,9 +91,10 @@ def get_terrain_normal_array(vertices: np.ndarray) -> np.ndarray:
             u = v2-v1
             v = v3-v1
             norm = np.cross(u, v)
-            result[id] = norm[0]
-            result[id+1] = norm[1]
-            result[id+2] = norm[2]
+            norm = norm / np.linalg.norm(norm)
+            result[id*3] = norm[0]
+            result[id*3+1] = norm[1]
+            result[id*3+2] = norm[2]
     return result
     
 
@@ -127,9 +126,8 @@ class Terrain(GameObject):
         self.normals = get_terrain_normal_array(self.vertices)
         self.indices = get_tri_indices_array(size)
         self.colors = get_color_array(noise)
-        print(np.max(self.indices))
         print(self.vertices, self.vertices.shape)
-        print(self.indices)
+        print(self.normals, self.normals.shape)
         
     
     def drawSelf(self):
