@@ -18,4 +18,4 @@ class Camera(Component):
         """
         Returns the view matrix of the camera.
         """
-        return np.linalg.inv(self.object.worldMat @ np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, -1, 0], [0, 0, 0, 1]]))
+        return np.linalg.inv(self.object.worldMat)

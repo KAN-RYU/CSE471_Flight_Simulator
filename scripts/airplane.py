@@ -13,7 +13,7 @@ def calculateLiftCoef(x):
     return -(1/216000) * x * (x - 90) * (x + 90)
 
 def calculateSteeringCoef(x):
-    return 1 / (1 + np.exp(-1 * x))
+    return 0.1 / (1 + np.exp(-1 * x))
 
 def getScale6(value: np.ndarray(3), posX, negX, posY, negY, posZ, negZ) -> np.ndarray(3):
     result = value
@@ -43,8 +43,9 @@ class AirplaneController(Script):
         self.hInput = 0
         self.vInput = 0
         self.zInput = 0
+        self.rollInput = 0
         self.liftPower = 50
-        self.rudderPower = 20
+        self.rudderPower = 10
         self.inducedDrag = 1
         self.airBrakeDrag = 10
         self.flapsDrag = 10
@@ -52,8 +53,8 @@ class AirplaneController(Script):
         self.flapsAoaBias = 5
         self.airBrakeEnabled = False
         self.flapsEnabled = False
-        self.turnSpeed = np.array([30, 15, 270])
-        self.turnAcceleration = np.array([60, 30, 540])
+        self.turnSpeed = np.array([60, 30, 60])
+        self.turnAcceleration = np.array([60, 30, 60])
 
         self.velocity = np.zeros(3)
         self.lastVelocity = np.zeros(3)
@@ -72,7 +73,7 @@ class AirplaneController(Script):
             self.rb = rb
 
     def Update(self, gameObject: GameObject, dt: float):
-        print(gameObject.position)
+        print(self.object.position)
         self.CalculateState(dt)
         self.CalculateAoA()
         self.calculateGForce(dt)
@@ -93,6 +94,10 @@ class AirplaneController(Script):
             self.hInput = 1
         if key == b'e':
             self.zInput = 1 - self.zInput
+        if key == b';':
+            self.rollInput = -1
+        if key == b'\'':
+            self.rollInput = 1
 
         if key == b' ':
             self.airBrakeEnabled = True
@@ -105,12 +110,14 @@ class AirplaneController(Script):
             self.vInput = 0
         if key == b'a' or key == b'd':
             self.hInput = 0
+        if key == b';' or key == b'\'':
+            self.rollInput = 0
 
         if key == b' ':
             self.airBrakeEnabled = False
 
     def CalculateState(self, dt):
-        rotationMat = Quaternion.to_rotation_matrix(self.rb.rotation)
+        rotationMat = self.rb.rotation.to_rotation_matrix()
         invRotationMat = np.linalg.inv(rotationMat)
         self.localVelocity = (invRotationMat @ np.append(self.rb.velocity, [0]))[:3]
         self.localAngularVelocity = (invRotationMat @ np.append(self.rb.angular_velocity, [0]))[:3]
@@ -121,11 +128,11 @@ class AirplaneController(Script):
             self.aoa_yaw = 0
             return
 
-        self.aoa = np.arctan2(self.localVelocity[1], self.localVelocity[2])
+        self.aoa = np.arctan2(-self.localVelocity[1], self.localVelocity[2])
         self.aoa_yaw = np.arctan2(self.localVelocity[0], self.localVelocity[2])
 
     def calculateGForce(self, dt):
-        rotationMat = Quaternion.to_rotation_matrix(self.rb.rotation)
+        rotationMat = self.rb.rotation.to_rotation_matrix()
         invRotationMat = np.linalg.inv(rotationMat)
         acceleration = (self.velocity - self.lastVelocity) / dt
         self.localGForce = (invRotationMat @ np.append(acceleration, [0]))[:3]
@@ -158,7 +165,7 @@ class AirplaneController(Script):
         return np.min([np.max([error, -accel]), accel])
 
     def updateThrust(self):
-        self.rb.applyRelativeForce(np.array([0, 0, self.zInput * 10000]))
+        self.rb.applyRelativeForce(np.array([0, 0, -self.zInput * 10000]))
 
     def updateDrag(self):
         lv = self.localVelocity
@@ -202,11 +209,12 @@ class AirplaneController(Script):
         speed = np.max([0, self.localVelocity[2]])
         steeringPower = calculateSteeringCoef(speed)
 
-        targetAV = np.array([self.vInput, 0, -self.hInput] * self.turnSpeed * steeringPower)
+        targetAV = np.array([-self.vInput, -self.hInput, -self.rollInput] * self.turnSpeed * steeringPower)
         av = np.rad2deg(self.localAngularVelocity)
 
         correction = np.array([self.calculateSteering(dt, av[0], targetAV[0], self.turnAcceleration[0] * steeringPower),
                                  self.calculateSteering(dt, av[1], targetAV[1], self.turnAcceleration[1] * steeringPower),
                                  self.calculateSteering(dt, av[2], targetAV[2], self.turnAcceleration[2] * steeringPower)])
         
-        self.rb.applyRelativeTorque(np.deg2rad(correction))
+        # print(correction)
+        self.rb.applyRelativeTorqueStep(np.deg2rad(correction))

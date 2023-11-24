@@ -62,6 +62,59 @@ class Quaternion:
 
         return roll_x, pitch_y, yaw_z
     
+    @staticmethod
+    def rotation_matrix_to_quaternion(rotation_matrix):
+        trace = np.trace(rotation_matrix)
+        
+        if trace > 0:
+            S = np.sqrt(trace + 1.0) * 2
+            w = 0.25 * S
+            x = (rotation_matrix[2, 1] - rotation_matrix[1, 2]) / S
+            y = (rotation_matrix[0, 2] - rotation_matrix[2, 0]) / S
+            z = (rotation_matrix[1, 0] - rotation_matrix[0, 1]) / S
+        elif rotation_matrix[0, 0] > rotation_matrix[1, 1] and rotation_matrix[0, 0] > rotation_matrix[2, 2]:
+            S = np.sqrt(1.0 + rotation_matrix[0, 0] - rotation_matrix[1, 1] - rotation_matrix[2, 2]) * 2
+            w = (rotation_matrix[2, 1] - rotation_matrix[1, 2]) / S
+            x = 0.25 * S
+            y = (rotation_matrix[0, 1] + rotation_matrix[1, 0]) / S
+            z = (rotation_matrix[0, 2] + rotation_matrix[2, 0]) / S
+        elif rotation_matrix[1, 1] > rotation_matrix[2, 2]:
+            S = np.sqrt(1.0 + rotation_matrix[1, 1] - rotation_matrix[0, 0] - rotation_matrix[2, 2]) * 2
+            w = (rotation_matrix[0, 2] - rotation_matrix[2, 0]) / S
+            x = (rotation_matrix[0, 1] + rotation_matrix[1, 0]) / S
+            y = 0.25 * S
+            z = (rotation_matrix[1, 2] + rotation_matrix[2, 1]) / S
+        else:
+            S = np.sqrt(1.0 + rotation_matrix[2, 2] - rotation_matrix[0, 0] - rotation_matrix[1, 1]) * 2
+            w = (rotation_matrix[1, 0] - rotation_matrix[0, 1]) / S
+            x = (rotation_matrix[0, 2] + rotation_matrix[2, 0]) / S
+            y = (rotation_matrix[1, 2] + rotation_matrix[2, 1]) / S
+            z = 0.25 * S
+
+        # 정규화
+        quaternion = np.array([w, x, y, z]) / np.linalg.norm([w, x, y, z])
+
+        return Quaternion(*quaternion)
+    
+    @staticmethod
+    def lookat(target, up):
+        # 정규화
+        f = target / np.linalg.norm(target)
+        r = np.cross(up, f)
+        r /= np.linalg.norm(r)
+        u = np.cross(f, r)
+        u /= np.linalg.norm(u)
+
+        # 회전 행렬을 생성
+        m = np.array([
+            [r[0], u[0], -f[0]],
+            [r[1], u[1], -f[1]],
+            [r[2], u[2], -f[2]]
+        ])
+
+        # 회전 행렬을 쿼터니언으로 변환
+        return Quaternion.rotation_matrix_to_quaternion(m)
+
     def to_rotation_matrix(self):
         # Quaternion을 3x3 회전 행렬로 변환
         qw, qx, qy, qz = self.w, self.x, self.y, self.z

@@ -94,6 +94,15 @@ class GameObject:
         self.rotation = rotation
         self.needUpdate = True
 
+    def lookat(self, target, up=np.array([0, 1, 0])):
+        self.rotation = Quaternion.from_rotation_matrix(np.linalg.inv(np.eye(3) @ self.getLocalMat()[:3, :3])) * Quaternion.from_rotation_matrix(np.linalg.inv(np.eye(3) @ np.array([
+            [1, 0, 0, target[0]],
+            [0, 1, 0, target[1]],
+            [0, 0, 1, target[2]],
+            [0, 0, 0, 1]
+        ])[:3, :3]))
+        self.needUpdate = True
+
     def scale(self, scale):
         self.scale *= scale
         self.needUpdate = True

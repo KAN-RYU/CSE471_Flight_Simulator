@@ -5,6 +5,7 @@ import numpy as np
 import time as t
 from SGEngine.gameobject import *
 from SGEngine.camera import Camera
+from SGEngine.skybox import Skybox
 
 class Scene:
     time = 0
@@ -12,6 +13,7 @@ class Scene:
     def __init__(self, width, height):
         self.width = width
         self.height = height
+        self.skybox = None
 
         self.prev_time = t.time()
 
@@ -71,7 +73,6 @@ class Scene:
         glViewport(0, 0, w, h)
         glutReshapeWindow(w, h)
 
-        glutPostRedisplay()
 
     def mouse(self, button, state, x, y):
         """
@@ -82,7 +83,6 @@ class Scene:
         for obj in self.objects:
             obj.mouse(button, state, x, y)
 
-        glutPostRedisplay()
 
     def motion(self, x, y):
         """
@@ -93,7 +93,6 @@ class Scene:
         for obj in self.objects:
             obj.motion(x, y)
 
-        glutPostRedisplay()
 
     def mouseMove(self, x, y):
         """
@@ -104,7 +103,6 @@ class Scene:
         for obj in self.objects:
             obj.mouseMove(x, y)
 
-        glutPostRedisplay()
 
     def keyboard(self, key, x, y):
         """
@@ -121,7 +119,6 @@ class Scene:
         for obj in self.objects:
             obj.keyboard(key, x, y)
         
-        glutPostRedisplay()
 
     def keyboardup(self, key, x, y):
         """
@@ -132,7 +129,6 @@ class Scene:
         for obj in self.objects:
             obj.keyboardUp(key, x, y)
 
-        glutPostRedisplay()
 
     def special(self, key, x, y):
         """
@@ -140,7 +136,6 @@ class Scene:
         """
         # print(f"Display #{glutGetWindow()} special key event: key={key}, x={x}, y={y}")    
 
-        glutPostRedisplay()
 
     def update(self, dt):
         """
@@ -170,6 +165,10 @@ class Scene:
         self.mainWindow = glutCreateWindow(b"Flight Simulator")
         glutSetWindow(self.mainWindow)
 
+        # load skybox
+        self.skybox = Skybox(self)
+        self.skybox.loadTextures()
+        self.skybox.draw()
         # initialize
         for obj in self.objects:
             obj.init()
@@ -194,13 +193,17 @@ class Scene:
 
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
-        if self.camera is not None:
+        if self.camera_obj is not None:
             gluPerspective(self.camera.fov, self.width / self.height, self.camera.near, self.camera.far)
 
         glMatrixMode(GL_MODELVIEW)
         glLoadIdentity()
-        if self.camera is not None:
+        if self.camera_obj is not None:
             glMultMatrixf(self.camera.getViewMat().T)
+        
+        print(self.camera_obj.position)
+        if self.skybox is not None:
+            self.skybox.draw()
 
         for obj in self.objects:
             obj.updateWorldMat()
