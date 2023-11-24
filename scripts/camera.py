@@ -1,7 +1,7 @@
 from SGEngine.script import *
 # from SGEngine.quaternion import *
 import numpy as np
-import quaternion
+from SGEngine.quaternion import Quaternion
 
 class CameraController(Script):
     def __init__(self, target: GameObject):

@@ -75,8 +75,28 @@ def get_terrain_vertices_array(noise: np.ndarray, height: float) -> np.ndarray:
     y = noise.flatten()
     minY = np.min(y)
     y = (y+minY) * height - minY
-    result = np.vstack([x, y, z]).flatten('F')
+    result = np.vstack([x, y, z]).flatten('F') * 10
     return result
+
+def get_terrain_normal_array(vertices: np.ndarray) -> np.ndarray:
+    result = np.zeros(vertices.shape, dtype='float32')
+    size = int(np.sqrt(vertices.shape[0]/3))
+    n = (size-1)
+    for i in tqdm(range(n)):
+        for j in range(n):
+            id = i*size+j
+            v1 = np.array([vertices[(id)*3], vertices[(id)*3+1], vertices[(id)*3+2]])
+            v2 = np.array([vertices[(id+size)*3], vertices[(id+size)*3+1], vertices[(id+size)*3+2]])
+            v3 = np.array([vertices[(id+1)*3], vertices[(id+1)*3+1], vertices[(id+1)*3+2]])
+            u = v2-v1
+            v = v3-v1
+            norm = np.cross(u, v)
+            norm = norm / np.linalg.norm(norm)
+            result[id*3] = norm[0]
+            result[id*3+1] = norm[1]
+            result[id*3+2] = norm[2]
+    return result
+    
 
 def get_tri_indices_array(size=256) -> np.ndarray:
     result = np.array([],dtype='uint')
@@ -103,11 +123,11 @@ class Terrain(GameObject):
         noise = generate_fractal_noise_2d(shape=(size, size), res=(r, r), octaves=5, persistence=0.5)
         noise = apply_gradient_map(noise, rate=0.3)
         self.vertices = get_terrain_vertices_array(noise, 5)
+        self.normals = get_terrain_normal_array(self.vertices)
         self.indices = get_tri_indices_array(size)
         self.colors = get_color_array(noise)
-        print(np.max(self.indices))
         print(self.vertices, self.vertices.shape)
-        print(self.indices)
+        print(self.normals, self.normals.shape)
         
     
     def drawSelf(self):
@@ -119,7 +139,8 @@ class Terrain(GameObject):
         glVertexPointer(3, GL_FLOAT, 0, self.vertices)
         glEnableClientState(GL_COLOR_ARRAY)
         glColorPointer(3, GL_FLOAT, 0, self.colors)
-        
+        glEnableClientState(GL_NORMAL_ARRAY)
+        glNormalPointer(GL_FLOAT, 0, self.normals)        
         glDrawElements(GL_TRIANGLES, len(self.indices), GL_UNSIGNED_INT, self.indices)   
         glPopMatrix()
 
