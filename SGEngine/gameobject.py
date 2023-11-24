@@ -197,7 +197,7 @@ class Cube(GameObject):
         glColor3f(1.0, 0.0, 0.0)
         glPushMatrix()
         glMultMatrixd(self.worldMat.T)
-        glutSolidCube(1)
+        self.scene.model.draw()
         glPopMatrix()
         glColor3f(1.0, 1.0, 1.0)
 

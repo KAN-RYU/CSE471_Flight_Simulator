@@ -9,13 +9,14 @@ from scripts.airplane import AirplaneController
 from scripts.terrain import Terrain
 from scripts.camera import CameraController
 import numpy as np
+import pywavefront
 
 if __name__ == "__main__":
     mainScene = Scene(1280, 720)
     
-    cube = Cube()
+    cube = Cube(position=np.array([0, 0, -10], dtype=np.float32), rotation=np.array([0, 0, 0], dtype=np.float32))
     rb = RigidBody(position=np.array([0, 100, 0], dtype=np.float32), inertia=np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]]))
-    # rb.hasGravity = False
+    rb.hasGravity = False
     rb.mass = 100
     cube.addComponent(rb)
     cube.addComponent(AirplaneController())
@@ -24,6 +25,7 @@ if __name__ == "__main__":
     # plane = Plane(scale=np.array([10000, 1, 10000]))
     # camera_obj = GameObject(position=np.array([-128, 64, -128]), rotation=np.array([np.pi/8, np.pi/4, 0]))
     camera_obj = GameObject(position=np.array([0, 2, 6]), rotation=np.array([-np.pi/8, 0, 0]))
+    # camera_obj = GameObject(position=np.array([0, 0, 0]), rotation=np.array([0, 0, 0]))
     camera_obj.addComponent(Camera(far = 256))
     # camera_obj.addComponent(CameraController(cube))
     # camera_obj.addComponent(FPSController())
@@ -38,3 +40,4 @@ if __name__ == "__main__":
     # mainScene.addObject(plane)
     
     mainScene.run()
+

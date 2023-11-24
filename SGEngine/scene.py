@@ -5,6 +5,7 @@ import numpy as np
 import time as t
 from SGEngine.gameobject import *
 from SGEngine.camera import Camera
+from SGEngine.model import Model
 from SGEngine.skybox import Skybox
 
 class Scene:
@@ -172,6 +173,8 @@ class Scene:
         # initialize
         for obj in self.objects:
             obj.init()
+        self.model = Model("models/14082_WWII_Plane_Japan_Kawasaki_Ki-61_v1_L2.obj")
+
         glutDisplayFunc(self.display)
         glutReshapeFunc(self.reshape)
         glutMouseFunc(self.mouse)
@@ -201,7 +204,6 @@ class Scene:
         if self.camera_obj is not None:
             glMultMatrixf(self.camera.getViewMat().T)
         
-        print(self.camera_obj.position)
         if self.skybox is not None:
             self.skybox.draw()
 

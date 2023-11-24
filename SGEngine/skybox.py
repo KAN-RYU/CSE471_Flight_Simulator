@@ -91,7 +91,6 @@ class Skybox:
 
         glPushMatrix()
         glEnableClientState(GL_VERTEX_ARRAY)
-        # glScalef(100, 100, 100)
         glVertexPointer(3, GL_FLOAT, 0, skybox_vertices)
         glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, skybox_indices)
         glDisableClientState(GL_VERTEX_ARRAY)
