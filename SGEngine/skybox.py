@@ -40,8 +40,8 @@ skybox_indices = np.array([
 imagePaths = [
     "images/right.jpg",
     "images/left.jpg",
-    "images/top.jpg",
     "images/bottom.jpg",
+    "images/top.jpg",
     "images/front.jpg",
     "images/back.jpg"
 ]
@@ -63,7 +63,7 @@ class Skybox:
         glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
 
         for i in range(6):
-            im = Image.open(imagePaths[i])
+            im = Image.open(imagePaths[i]).rotate(180).transpose(Image.FLIP_LEFT_RIGHT)
             width, height = im.size
             glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, im.tobytes())
 
