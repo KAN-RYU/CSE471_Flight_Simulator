@@ -16,7 +16,7 @@ class Scene:
         self.height = height
         self.skybox = None
 
-        self.prev_time = t.time()
+        self.prev_time = 0
 
         self.objects: list[GameObject] = []
 
@@ -149,13 +149,14 @@ class Scene:
 
     def timer(self, value):
         current_time = t.time()
-        dt = current_time - self.prev_time
+        if self.prev_time != 0:
+            dt = current_time - self.prev_time
 
-        self.update(dt)
+            self.update(dt)
 
-        glutPostRedisplay()
+            glutPostRedisplay()
         self.prev_time = current_time
-        glutTimerFunc(30, self.timer, 0)
+        glutTimerFunc(1000//60, self.timer, 0)
 
     def run(self):
         glutInit()
