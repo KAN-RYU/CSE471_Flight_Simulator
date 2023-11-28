@@ -109,9 +109,9 @@ class AirplaneController(Script):
         if key == b'w' or key == b's':
             self.vInput = 0
         if key == b'a' or key == b'd':
-            self.hInput = 0
-        if key == b'q' or key == b'e':
             self.rollInput = 0
+        if key == b'q' or key == b'e':
+            self.hInput = 0
 
         if key == b' ':
             self.airBrakeEnabled = False
