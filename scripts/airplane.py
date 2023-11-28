@@ -85,19 +85,19 @@ class AirplaneController(Script):
 
     def Keyboard(self, gameObject: GameObject, key: int, x: int, y: int):
         if key == b'w':
-            self.vInput = -1
-        if key == b's':
             self.vInput = 1
+        if key == b's':
+            self.vInput = -1
         if key == b'a':
-            self.hInput = -1
+            self.rollInput = -1
         if key == b'd':
-            self.hInput = 1
+            self.rollInput = 1
         if key == b'f':
             self.zInput = 1 - self.zInput
         if key == b'q':
-            self.rollInput = -1
+            self.hInput = -1
         if key == b'e':
-            self.rollInput = 1
+            self.hInput = 1
 
         if key == b' ':
             self.airBrakeEnabled = True
