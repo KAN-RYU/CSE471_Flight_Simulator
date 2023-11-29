@@ -5,6 +5,7 @@ import numpy as np
 import time as t
 from SGEngine.gameobject import *
 from SGEngine.camera import Camera
+from SGEngine.model import Model
 from SGEngine.skybox import Skybox
 
 class Scene:
@@ -15,7 +16,7 @@ class Scene:
         self.height = height
         self.skybox = None
 
-        self.prev_time = t.time()
+        self.prev_time = 0
 
         self.objects: list[GameObject] = []
 
@@ -148,13 +149,14 @@ class Scene:
 
     def timer(self, value):
         current_time = t.time()
-        dt = current_time - self.prev_time
+        if self.prev_time != 0:
+            dt = current_time - self.prev_time
 
-        self.update(dt)
+            self.update(dt)
 
-        glutPostRedisplay()
+            glutPostRedisplay()
         self.prev_time = current_time
-        glutTimerFunc(30, self.timer, 0)
+        glutTimerFunc(1000//60, self.timer, 0)
 
     def run(self):
         glutInit()
@@ -172,6 +174,7 @@ class Scene:
         # initialize
         for obj in self.objects:
             obj.init()
+
         glutDisplayFunc(self.display)
         glutReshapeFunc(self.reshape)
         glutMouseFunc(self.mouse)
@@ -201,7 +204,6 @@ class Scene:
         if self.camera_obj is not None:
             glMultMatrixf(self.camera.getViewMat().T)
         
-        print(self.camera_obj.position)
         if self.skybox is not None:
             self.skybox.draw()
 

@@ -85,33 +85,33 @@ class AirplaneController(Script):
 
     def Keyboard(self, gameObject: GameObject, key: int, x: int, y: int):
         if key == b'w':
-            self.vInput = -1
-        if key == b's':
             self.vInput = 1
+        if key == b's':
+            self.vInput = -1
         if key == b'a':
-            self.hInput = -1
-        if key == b'd':
-            self.hInput = 1
-        if key == b'e':
-            self.zInput = 1 - self.zInput
-        if key == b';':
             self.rollInput = -1
-        if key == b'\'':
+        if key == b'd':
             self.rollInput = 1
+        if key == b'f':
+            self.zInput = 1 - self.zInput
+        if key == b'q':
+            self.hInput = -1
+        if key == b'e':
+            self.hInput = 1
 
         if key == b' ':
             self.airBrakeEnabled = True
 
-        if key == b'f':
+        if key == b'c':
             self.flapsEnabled = not self.flapsEnabled
 
     def KeyboardUp(self, gameObject: GameObject, key: int, x: int, y: int):
         if key == b'w' or key == b's':
             self.vInput = 0
         if key == b'a' or key == b'd':
-            self.hInput = 0
-        if key == b';' or key == b'\'':
             self.rollInput = 0
+        if key == b'q' or key == b'e':
+            self.hInput = 0
 
         if key == b' ':
             self.airBrakeEnabled = False
@@ -216,5 +216,4 @@ class AirplaneController(Script):
                                  self.calculateSteering(dt, av[1], targetAV[1], self.turnAcceleration[1] * steeringPower),
                                  self.calculateSteering(dt, av[2], targetAV[2], self.turnAcceleration[2] * steeringPower)])
         
-        # print(correction)
         self.rb.applyRelativeTorqueStep(np.deg2rad(correction))
