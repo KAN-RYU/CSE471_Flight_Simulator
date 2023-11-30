@@ -156,7 +156,7 @@ class Scene:
 
             glutPostRedisplay()
         self.prev_time = current_time
-        glutTimerFunc(1000//60, self.timer, 0)
+        glutTimerFunc(1000//120, self.timer, 0)
 
     def run(self):
         glutInit()

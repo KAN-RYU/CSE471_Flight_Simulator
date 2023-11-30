@@ -33,6 +33,7 @@ class RigidBody(Component):
         gameObject.updateCallbacks.append(self.update)
 
     def update(self, obj: GameObject, dt: float):
+        print("dt", dt)
         if self.hasGravity:
             self.force += self.mass * self.gravity
         

@@ -52,8 +52,6 @@ class FPSController(Script):
         
         gameObject.setRotation(r)
 
-        glutPostRedisplay()
-
         # warp cursor
         if x < 100 or x > self.object.scene.width - 100 or y < 100 or y > self.object.scene.height - 100:
             glutWarpPointer(self.object.scene.width // 2, self.object.scene.height // 2)

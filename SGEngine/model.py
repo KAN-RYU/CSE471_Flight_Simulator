@@ -2,8 +2,6 @@ from OpenGL.GL import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
 from SGEngine.objloader import OBJ
-import ctypes
-import pywavefront
 
 class Model:
     def __init__(self, path):
