@@ -32,9 +32,11 @@ class Scene:
         """
         Light used in the scene.
         """
-        glEnable(GL_COLOR_MATERIAL)
         glEnable(GL_LIGHTING)
+        glEnable(GL_LIGHT0)
+        glEnable(GL_COLOR_MATERIAL)
         glEnable(GL_DEPTH_TEST)
+        glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE)
 
         # feel free to adjust light colors
         lightAmbient = [0.5, 0.5, 0.5, 1.0]
@@ -45,7 +47,6 @@ class Scene:
         glLightfv(GL_LIGHT0, GL_DIFFUSE, lightDiffuse)
         glLightfv(GL_LIGHT0, GL_SPECULAR, lightSpecular)
         glLightfv(GL_LIGHT0, GL_POSITION, lightPosition)
-        glEnable(GL_LIGHT0)
 
     def display(self):
         """
@@ -53,6 +54,8 @@ class Scene:
         """
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         glClearColor(0, 0, 0, 1)
+
+        self.light()
         
         self.drawScene()
 
