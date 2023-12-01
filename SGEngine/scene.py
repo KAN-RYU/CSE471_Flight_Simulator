@@ -196,6 +196,8 @@ class Scene:
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         glUseProgram(0)
 
+        self.light()
+
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
         if self.camera_obj is not None:

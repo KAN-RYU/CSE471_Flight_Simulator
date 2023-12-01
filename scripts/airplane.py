@@ -59,11 +59,8 @@ class AirplaneController(Script):
         self.turnSpeed = np.array([30, 15, 270])
         self.turnAcceleration = np.array([180, 180, 540])
 
-        self.velocity = np.zeros(3)
-        self.lastVelocity = np.zeros(3)
         self.localVelocity = np.zeros(3)
         self.localAngularVelocity = np.zeros(3)
-        self.localGForce = np.zeros(3)
 
         self.aoa = 0
         self.aoa_yaw = 0
@@ -79,7 +76,6 @@ class AirplaneController(Script):
         # print(self.object.position)
         self.CalculateState(dt)
         self.CalculateAoA()
-        self.calculateGForce(dt)
 
         self.updateThrust()
         self.updateLift()
@@ -133,13 +129,6 @@ class AirplaneController(Script):
             return
         self.aoa = np.arctan2(self.localVelocity[1], -self.localVelocity[2])
         self.aoa_yaw = np.arctan2(-self.localVelocity[0], -self.localVelocity[2])
-
-    def calculateGForce(self, dt):
-        rotationMat = self.rb.rotation.to_rotation_matrix()
-        invRotationMat = np.linalg.inv(rotationMat)
-        acceleration = (self.velocity - self.lastVelocity) / dt
-        self.localGForce = (invRotationMat @ np.append(acceleration, [0]))[:3]
-        self.lastVelocity = self.velocity
 
     def calculateLift(self, aoa, rightAxis, liftPower):
         liftVelocity = self.localVelocity - np.dot(self.localVelocity, rightAxis) * rightAxis
