@@ -107,7 +107,6 @@ class OBJ:
             mtl = self.mtl[material]
             if 'texture_Kd' in mtl:
                 # use diffuse texmap
-                print(mtl['texture_Kd'])
                 glBindTexture(GL_TEXTURE_2D, mtl['texture_Kd'])
             elif 'texture_Ka' in mtl:
                 glBindTexture(GL_TEXTURE_2D, mtl['texture_Ka'])

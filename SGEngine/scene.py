@@ -1,12 +1,12 @@
 from OpenGL.GL import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
-import numpy as np
-import time as t
 from SGEngine.gameobject import *
 from SGEngine.camera import Camera
 from SGEngine.model import Model
 from SGEngine.skybox import Skybox
+import numpy as np
+import time as t
 
 class Scene:
     time = 0
@@ -55,8 +55,6 @@ class Scene:
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         glClearColor(0, 0, 0, 1)
 
-        self.light()
-        
         self.drawScene()
 
         glutSwapBuffers()
@@ -155,11 +153,12 @@ class Scene:
         if self.prev_time != 0:
             dt = current_time - self.prev_time
 
-            self.update(dt)
+            self.update(1/60)
 
             glutPostRedisplay()
+
         self.prev_time = current_time
-        glutTimerFunc(1000//120, self.timer, 0)
+        glutTimerFunc(1000//60, self.timer, 0)
 
     def run(self):
         glutInit()
@@ -201,7 +200,6 @@ class Scene:
         glLoadIdentity()
         if self.camera_obj is not None:
             gluPerspective(self.camera.fov, self.width / self.height, self.camera.near, self.camera.far)
-
         glMatrixMode(GL_MODELVIEW)
         glLoadIdentity()
         if self.camera_obj is not None:

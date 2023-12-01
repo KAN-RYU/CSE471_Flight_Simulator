@@ -13,6 +13,7 @@ class Airplane(GameObject):
     def init(self):
         super().init()
         self.model = Model("models/B17GREEN.obj")
+        # self.model = Model("models/14082_WWII_Plane_Japan_Kawasaki_Ki-61_v1_L2.obj")
         
     def drawSelf(self):
         glPushMatrix()

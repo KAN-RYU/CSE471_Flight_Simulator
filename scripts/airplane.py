@@ -76,7 +76,7 @@ class AirplaneController(Script):
             self.rb = rb
 
     def Update(self, gameObject: GameObject, dt: float):
-        print(self.object.position)
+        # print(self.object.position)
         self.CalculateState(dt)
         self.CalculateAoA()
         self.calculateGForce(dt)

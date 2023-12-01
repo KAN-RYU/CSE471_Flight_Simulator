@@ -15,3 +15,6 @@ class Model:
         glTranslatef(-5.5, -3, 2)
         glRotatef(180, 0, 1, 0)
         self.obj.render()
+        # glRotatef(-90, 1, 0, 0)
+        # glRotatef(90, 0, 0, 1)
+        # self.obj.render()
