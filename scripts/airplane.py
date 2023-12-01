@@ -57,7 +57,7 @@ class AirplaneController(Script):
         self.airBrakeEnabled = False
         self.flapsEnabled = True
         self.turnSpeed = np.array([30, 15, 270])
-        self.turnAcceleration = np.array([60, 30, 540])
+        self.turnAcceleration = np.array([180, 180, 540])
 
         self.velocity = np.zeros(3)
         self.lastVelocity = np.zeros(3)
@@ -212,7 +212,7 @@ class AirplaneController(Script):
         speed = np.max([0, self.localVelocity[2]])
         steeringPower = calculateSteeringCoef(speed)
 
-        targetAV = np.array([-self.vInput, -self.hInput - self.rollInput, -self.rollInput] * self.turnSpeed * steeringPower)
+        targetAV = np.array([-self.vInput, -self.hInput, -self.rollInput] * self.turnSpeed * steeringPower)
         av = np.rad2deg(self.localAngularVelocity)
 
         correction = np.array([self.calculateSteering(dt, av[0], targetAV[0], self.turnAcceleration[0] * steeringPower),
