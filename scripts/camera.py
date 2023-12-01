@@ -1,3 +1,4 @@
+from SGEngine.gameobject import GameObject
 from SGEngine.script import *
 # from SGEngine.quaternion import *
 import numpy as np
@@ -7,13 +8,21 @@ class CameraController(Script):
     def __init__(self, target: GameObject):
         super().__init__()
         self.target = target
-        self.alpha = 0.5
-        self.rotalpha = 0.1
-        self.rotoffset = np.array([-np.pi / 8, 0, 0])
-        self.offset = np.array([0, 2, 6])
+        self.viewIndex = 0
+        self.rotoffsets = np.array([[-np.pi / 8, 0, 0], [-np.pi / 8, np.pi, 0], [0, 0, 0]])
+        self.offsets = np.array([[0, 2, 6], [0, 2, -8], [0, 0, -6]])
 
     def Update(self, obj: GameObject, dt: float):
-        obj.setPosition(self.target.position + self.target.getLocalVec(self.offset))
-        rot = self.target.rotation * Quaternion.from_euler(*self.rotoffset)
+        curOffset = self.offsets[self.viewIndex]
+        curRotoffset = self.rotoffsets[self.viewIndex]
+        obj.setPosition(self.target.position + self.target.getLocalVec(curOffset))
+        rot = self.target.rotation * Quaternion.from_euler(*curRotoffset)
         rot.normalize()
         obj.setRotation(rot)
+
+    def Keyboard(self, gameObject: GameObject, key: int, x: int, y: int):
+        if key == b'v':
+            self.nextView()
+
+    def nextView(self):
+        self.viewIndex = (self.viewIndex + 1) % len(self.offsets)
