@@ -3,10 +3,16 @@ from OpenGL.GLU import *
 from OpenGL.GLUT import *
 from SGEngine.gameobject import *
 from SGEngine.camera import Camera
+from SGEngine.airplane import Airplane
 from SGEngine.model import Model
 from SGEngine.skybox import Skybox
+from scripts.missile import *
+from scripts.building import *
+from scripts.broken_building import *
 import numpy as np
 import time as t
+
+from scripts.terrain import Terrain
 
 class Scene:
     time = 0
@@ -19,6 +25,26 @@ class Scene:
         self.prev_time = 0
 
         self.objects: list[GameObject] = []
+        self.terrain_BV = None
+        self.airplane_BV = None
+        self.building_BV = []
+        self.missiles = []
+
+    def setBuilding(self, building:Building):
+       self.building_BV.append([BVnode(building.meshes), building.init_pos, building])
+
+    def setAirplane(self, airplane:Airplane):
+       vertex = np.array(airplane.model.obj.vertices)
+       faces = airplane.model.obj.faces
+       indices = [np.array(face[0]) - 1 for face in faces]
+       vertices = [vertex[index] for index in indices]
+       meshes = [Mesh(vertices[i], None) for i in range(len(vertices))]
+       self.airplane_BV = BVnode(meshes)
+
+    def setTerrain(self, terrain):
+       vertices = terrain.vertices.reshape(-1,3)[terrain.indices.astype(np.int16)].reshape(-1,3,3)
+       meshes = [Mesh(vertices[i], None) for i in range(len(vertices))]
+       self.terrain_BV = BVnode(meshes)
 
     def setCamera(self, camera_obj:GameObject):
         self.camera_obj = camera_obj
@@ -117,6 +143,13 @@ class Scene:
             print("alt pressed")
         if glutGetModifiers() & GLUT_ACTIVE_CTRL:
             print("ctrl pressed")
+        if key == b'l':
+            airplane = self.objects[1]
+            if airplane:
+                rb = airplane.rb
+                missile = Missile(velocity = rb.velocity, position=airplane.position+np.array([0,-1.0,0]), rotation = np.array(airplane.rotation.to_euler()))
+                self.addObject(missile)
+                self.missiles.append(missile)
 
         for obj in self.objects:
             obj.keyboard(key, x, y)
@@ -138,7 +171,54 @@ class Scene:
         """
         # print(f"Display #{glutGetWindow()} special key event: key={key}, x={x}, y={y}")    
 
-
+    def pointCollisionWithTerrain(self, point):
+        ratio = 64 * Terrain.size / 5
+        x, y, z = point[0], point[1], point[2]
+        # print(x/Terrain.size, z/Terrain.size)
+        yLower = 0.5*Terrain.height*Terrain.size
+        if y < yLower:
+            return True
+        
+        xPos = x/Terrain.size + 64
+        zPos = z/Terrain.size + 64
+        xInd = np.floor(xPos)
+        zInd = np.floor(zPos)
+        if xInd < 0 or xInd > 127 or zInd < 0 or zInd > 127:
+            return False
+        
+        if xPos-xInd + zPos-zInd < 1:
+            ind = int(zInd*128 + xInd)
+            v1 = np.array([Terrain.verticesGlobal[ind*3], Terrain.verticesGlobal[ind*3+1], Terrain.verticesGlobal[ind*3+2]])
+            v2 = np.array([Terrain.verticesGlobal[(ind+128)*3], Terrain.verticesGlobal[(ind+128)*3+1], Terrain.verticesGlobal[(ind+128)*3+2]])
+            v3 = np.array([Terrain.verticesGlobal[(ind+1)*3], Terrain.verticesGlobal[(ind+1)*3+1], Terrain.verticesGlobal[(ind+1)*3+2]])
+            u = v2-v1
+            v = v3-v1
+            norm = np.cross(u, v)
+            norm = norm / np.linalg.norm(norm)
+            
+            xV = point - v1
+            if np.dot(norm, xV) <= 0:
+                return True
+            else:
+                return False
+        else:
+            ind = int(zInd*128 + xInd)
+            v1 = np.array([Terrain.verticesGlobal[(ind+1)*3], Terrain.verticesGlobal[(ind+1)*3+1], Terrain.verticesGlobal[(ind+1)*3+2]])
+            v2 = np.array([Terrain.verticesGlobal[(ind+128)*3], Terrain.verticesGlobal[(ind+128)*3+1], Terrain.verticesGlobal[(ind+128)*3+2]])
+            v3 = np.array([Terrain.verticesGlobal[(ind+129)*3], Terrain.verticesGlobal[(ind+129)*3+1], Terrain.verticesGlobal[(ind+129)*3+2]])
+            u = v2-v1
+            v = v3-v1
+            norm = np.cross(u, v)
+            norm = norm / np.linalg.norm(norm)
+            
+            xV = point - v1
+            if np.dot(norm, xV) <= 0:
+                return True
+            else:
+                return False
+            
+        
+        
     def update(self, dt):
         """
         Update callback function.
@@ -147,6 +227,72 @@ class Scene:
             obj.update(dt)
 
         Scene.time += dt
+        
+        planeCollisionFlag = False
+        
+        plane_pos = self.objects[1].position
+        
+        head_pos = plane_pos + np.array([0,0,-1])
+        # print((head_pos[0]/ratio, head_pos[2]/ratio))
+        if self.pointCollisionWithTerrain(head_pos):
+            print('head')
+            planeCollisionFlag = True
+        
+        rightwing_pos = plane_pos + np.array([2.5,0,-0.5])
+        if self.pointCollisionWithTerrain(rightwing_pos):
+            print('right')
+            planeCollisionFlag = True
+        
+        leftwing_pos = plane_pos + np.array([-2.5,0,-0.5])
+        if self.pointCollisionWithTerrain(leftwing_pos):
+            print('left')
+            planeCollisionFlag = True
+                
+        back_pos = plane_pos + np.array([0,0,2])
+        if self.pointCollisionWithTerrain(back_pos):
+            print('back')
+            planeCollisionFlag = True
+                
+        # if(collide(self.airplane_BV, self.terrain_BV, self.objects[1].position)):
+        if planeCollisionFlag:
+            print("WASTED!!")
+            print("Exit the program!")
+            glutDestroyWindow(self.mainWindow)
+            exit()
+        
+        # missile collision
+        delete_list_missile = []
+        delete_list_building = []
+        yUpper = 5000
+        yLower = 0.5*Terrain.height*Terrain.size
+        xzLimit = 100*Terrain.size
+        for missile in self.missiles:
+            x,y,z = missile.pos+missile.init_pos
+            
+            # Out of Bound
+            if y > yUpper or y < yLower or x > xzLimit or x < -xzLimit or z > xzLimit or z < -xzLimit:
+                delete_list_missile.append(missile)
+                self.objects.remove(missile)
+                continue
+            
+            # Collide with Terrain
+            if self.pointCollisionWithTerrain(missile.pos + missile.init_pos):
+                delete_list_missile.append(missile)
+                self.objects.remove(missile)
+                continue
+            
+            for building in self.building_BV:
+                # print('check')
+                bv, offset, build = building
+                if collide_missile(missile.pos + missile.init_pos, bv, offset):
+                    self.objects[self.objects.index(build)] = BrokenBuilding(position=np.array([0.0, 0.0, 0.0]), rotation=np.array([0.0, 0.0, 0.0]), init_pos=offset)
+                    delete_list_missile.append(missile)
+                    delete_list_building.append(building)
+                    self.objects.remove(missile)
+            # print('check done')
+        for i in range(len(delete_list_building)):
+            self.building_BV.remove(delete_list_building[i])
+        self.missiles = list(set(self.missiles) - set(delete_list_missile))
 
     def timer(self, value):
         current_time = t.time()
@@ -213,6 +359,7 @@ class Scene:
         for obj in self.objects:
             obj.updateWorldMat()
             obj.draw()
+        
 
         self.drawAxes()
 

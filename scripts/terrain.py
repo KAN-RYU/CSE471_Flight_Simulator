@@ -7,150 +7,108 @@ from OpenGL.GLUT import *
 
 from SGEngine.gameobject import GameObject
 from SGEngine.quaternion import np
-import SGEngine.utils as utils
-from tqdm import tqdm
+from scripts.terrain_generator import *
 
-"""
-Ccodes below from 
-https://pvigier.github.io/2018/06/13/perlin-noise-numpy.html
+from PIL import Image
 
-"""
+rockTex = Image.open('./textures/IMGP5525_seamless.jpg').convert("RGB")
+dirtTex = Image.open('./textures/IMGP5487_seamless.jpg').convert("RGB")
+grassTex = Image.open('./textures/tilable-IMG_0044-verydark.png').convert("RGB")
+snowTex = Image.open('./textures/water.png').convert("RGB")
 
-def generate_perlin_noise_2d(shape, res):
-    def f(t):
-        return 6*t**5 - 15*t**4 + 10*t**3
-
-    delta = (res[0] / shape[0], res[1] / shape[1])
-    d = (shape[0] // res[0], shape[1] // res[1])
-    grid = np.mgrid[0:res[0]:delta[0],0:res[1]:delta[1]].transpose(1, 2, 0) % 1
-    # Gradients
-    angles = 2*np.pi*np.random.rand(res[0]+1, res[1]+1)
-    gradients = np.dstack((np.cos(angles), np.sin(angles)))
-    g00 = gradients[0:-1,0:-1].repeat(d[0], 0).repeat(d[1], 1)
-    g10 = gradients[1:,0:-1].repeat(d[0], 0).repeat(d[1], 1)
-    g01 = gradients[0:-1,1:].repeat(d[0], 0).repeat(d[1], 1)
-    g11 = gradients[1:,1:].repeat(d[0], 0).repeat(d[1], 1)
-    # Ramps
-    n00 = np.sum(grid * g00, 2)
-    n10 = np.sum(np.dstack((grid[:,:,0]-1, grid[:,:,1])) * g10, 2)
-    n01 = np.sum(np.dstack((grid[:,:,0], grid[:,:,1]-1)) * g01, 2)
-    n11 = np.sum(np.dstack((grid[:,:,0]-1, grid[:,:,1]-1)) * g11, 2)
-    # Interpolation
-    t = f(grid)
-    n0 = n00*(1-t[:,:,0]) + t[:,:,0]*n10
-    n1 = n01*(1-t[:,:,0]) + t[:,:,0]*n11
-    return np.sqrt(2)*((1-t[:,:,1])*n0 + t[:,:,1]*n1)
-
-def generate_fractal_noise_2d(shape, res, octaves=1, persistence=0.5):
-    noise = np.zeros(shape)
-    frequency = 1
-    amplitude = 1
-    for _ in range(octaves):
-        noise += amplitude * generate_perlin_noise_2d(shape, (frequency*res[0], frequency*res[1]))
-        frequency *= 2
-        amplitude *= persistence
-    return noise
-
-"""
-End here
-"""
-
-def apply_gradient_map(noise: np.ndarray, rate=0.5) -> np.ndarray:
-    """
-    Applying Gaussian Gradient map
-    """
-    x, y = np.meshgrid(np.linspace(-1, 1, noise.shape[0]), np.linspace(-1, 1, noise.shape[1]))
-    d = np.sqrt(x**2 + y**2)
-    mu = 0
-    g = np.exp(-((d-mu)**2 / (2.0*rate**2)))
-    return (noise + g) + 0.3
-
-def get_terrain_vertices_array(noise: np.ndarray, height: float) -> np.ndarray:
-    size = noise.shape[0]
-    center = size // 2
-    x = np.linspace(-center, center-1, size, dtype='float32')
-    x = np.hstack([x]*size)
-    z = np.linspace(-center, center-1, size, dtype='float32')
-    z = np.hstack([np.reshape(z, (-1, 1))]*size).flatten()
-    y = noise.flatten()
-    minY = np.min(y)
-    y = (y+minY) * height - minY
-    result = np.vstack([x, y, z]).flatten('F') * 10
-    return result
-
-def get_terrain_normal_array(vertices: np.ndarray) -> np.ndarray:
-    result = np.zeros(vertices.shape, dtype='float32')
-    size = int(np.sqrt(vertices.shape[0]/3))
-    n = (size-1)
-    for i in tqdm(range(n)):
-        for j in range(n):
-            id = i*size+j
-            v1 = np.array([vertices[(id)*3], vertices[(id)*3+1], vertices[(id)*3+2]])
-            v2 = np.array([vertices[(id+size)*3], vertices[(id+size)*3+1], vertices[(id+size)*3+2]])
-            v3 = np.array([vertices[(id+1)*3], vertices[(id+1)*3+1], vertices[(id+1)*3+2]])
-            u = v2-v1
-            v = v3-v1
-            norm = np.cross(u, v)
-            norm = norm / np.linalg.norm(norm)
-            result[id*3] = norm[0]
-            result[id*3+1] = norm[1]
-            result[id*3+2] = norm[2]
-    return result
-    
-
-def get_tri_indices_array(size=256) -> np.ndarray:
-    result = np.array([],dtype='uint')
-    n = (size-1)
-    for i in tqdm(range(n)):
-        for j in range(n):
-            result = np.hstack([result, [(i*size+j), (i*size+j+size), (i*size+j+1), (i*size+j+1), (i*size+j+size), (i*size+j+size+1)]])
-    return result
-
-def get_color_array(noise: np.ndarray) -> np.ndarray:
-    result = np.array([], dtype='float32')
-    startColor = np.array([1.0, 0.5, 0.0])
-    endColor = np.array([0.0, 1.0, 1.0])
-    for y in noise.flatten():
-        result = np.hstack([result, utils.vector_lerp(startColor, endColor, y)])
-    return result
+rockTexArray = np.array(rockTex)
+dirtTexArray = np.array(dirtTex)
+grassTexArray = np.array(grassTex)
+snowTexArray = np.array(snowTex)
 
 class Terrain(GameObject):
-    def __init__(self, position=np.zeros(3), rotation=np.zeros(3), scale=np.ones(3)):
+    size = 10
+    height = 5
+    interp: RectBivariateSpline
+    verticesGlobal: np.ndarray
+    def __init__(self, position=np.zeros(3), rotation=np.zeros(3), scale=np.ones(3), resolution=128, divide=8, size=10, height=5):
         super().__init__(position, rotation, scale)
         np.random.seed(int(time()))
-        size = 128
-        r = 8
-        noise = generate_fractal_noise_2d(shape=(size, size), res=(r, r), octaves=5, persistence=0.5)
+        Terrain.size = size
+        Terrain.height = height
+        r = divide
+        noise = generate_fractal_noise_2d(shape=(resolution, resolution), res=(r, r), octaves=5, persistence=0.5)
         noise = apply_gradient_map(noise, rate=0.3)
-        self.vertices = get_terrain_vertices_array(noise, 5)
+        self.vertices = get_terrain_vertices_array(noise, height) * size
+        Terrain.verticesGlobal = self.vertices
         self.normals = get_terrain_normal_array(self.vertices)
-        self.indices = get_tri_indices_array(size)
+        self.indices = get_tri_indices_array(resolution)
         self.colors = get_color_array(noise)
-        print(self.vertices, self.vertices.shape)
-        print(self.normals, self.normals.shape)
+        lerpCondition = np.array([0.2, 0.6, 1.0, 1.6])
+        self.tex, Terrain.interp = get_texture_array_interp(noise, [rockTexArray, dirtTexArray, grassTexArray, snowTexArray], lerpCon=lerpCondition)
+        # Image.fromarray((self.tex*255).astype(np.uint8), mode="RGB").show()
+        x, y = np.meshgrid(np.linspace(0, 1, resolution), np.linspace(0, 1, resolution))
+        self.texCoord = np.stack([x,y], axis=2).flatten()
+        print(self.vertices[:3])
+        
+        self.texid =  None
+        
         
     
     def drawSelf(self):
+        if not self.texid:
+            self.texid = glGenTextures(1)
+            glBindTexture(GL_TEXTURE_2D, self.texid)
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 1024, 1024, 0, GL_RGB, GL_FLOAT, self.tex)
+        
         glColor3f(1.0, 1.0, 1.0)
         # glShadeModel(GL_FLAT)
+        glEnable(GL_TEXTURE_2D)
+        glBindTexture(GL_TEXTURE_2D, self.texid)
         glPushMatrix()
         glMultMatrixd(self.worldMat.T)
         glEnableClientState(GL_VERTEX_ARRAY)
         glVertexPointer(3, GL_FLOAT, 0, self.vertices)
-        glEnableClientState(GL_COLOR_ARRAY)
-        glColorPointer(3, GL_FLOAT, 0, self.colors)
+        # glEnableClientState(GL_COLOR_ARRAY)
+        # glColorPointer(3, GL_FLOAT, 0, self.colors)
+        glEnableClientState(GL_TEXTURE_COORD_ARRAY)
+        glTexCoordPointer(2, GL_FLOAT, 0, self.texCoord)
         glEnableClientState(GL_NORMAL_ARRAY)
         glNormalPointer(GL_FLOAT, 0, self.normals)        
         glDrawElements(GL_TRIANGLES, len(self.indices), GL_UNSIGNED_INT, self.indices)   
         glPopMatrix()
+        glDisable(GL_TEXTURE_2D)
+        
+        floor = [[100, 0.0, 100],
+                 [-100, 0.0, 100],
+                 [-100, 0.0, -100],
+                 [100, 0.0, -100],]
+        floor = np.array(floor)
+        floor = floor * Terrain.size
+        glPushMatrix()
+        glColor3f(0.6, 0.5, 0.2)
+        glMultMatrixd(self.worldMat.T)
+        glBegin(GL_QUADS)
+        glNormal3f(0.0, -1.0, 0.0)
+        for vertice in floor:
+            glVertex3f(*(vertice))
+        glEnd()
+        glPopMatrix()
+        
+        water = [[100, 0.5*Terrain.height, 100],
+                 [-100, 0.5*Terrain.height, 100],
+                 [-100, 0.5*Terrain.height, -100],
+                 [100, 0.5*Terrain.height, -100],]
+        water = np.array(water)
+        water = water * Terrain.size
+        glEnable(GL_BLEND)
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+        glPushMatrix()
+        glColor4f(0.0, 0.2, 1.0, 0.6)
+        glMultMatrixd(self.worldMat.T)
+        glBegin(GL_QUADS)
+        glNormal3f(0.0, -1.0, 0.0)
+        for vertice in water:
+            glVertex3f(*(vertice))
+        glEnd()
+        glPopMatrix()
+        glDisable(GL_BLEND)
+        
 
-if __name__ == "__main__":
-    np.random.seed(int(time()))
-    size = 128
-    r = 8
-    noise = generate_fractal_noise_2d(shape=(size, size), res=(r, r), octaves=5, persistence=0.5)
-    noise = apply_gradient_map(noise, rate=0.3)
-    get_terrain_vertices_array(noise)
-    plt.imshow(noise, cmap='terrain', vmin=-0.8, vmax=0.8)
-    plt.colorbar()
-    plt.show()

@@ -8,10 +8,13 @@ class Model:
         self.loadModel(path)
 
     def loadModel(self, path):
-        self.obj = OBJ(path)
+        self.obj = OBJ(path, generate_on_init=False)
+
+    def generate(self):
+        self.obj.generate()
 
     def draw(self):
-        glTranslatef(-3, -1.5, 1)
+        # glTranslatef(-3, -1.5, 1)
         glRotatef(180, 0, 1, 0)
         glScale(0.5, 0.5, 0.5)
         self.obj.render()

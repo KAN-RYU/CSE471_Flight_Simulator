@@ -9,8 +9,8 @@ class CameraController(Script):
         super().__init__()
         self.target = target
         self.viewIndex = 0
-        self.rotoffsets = np.array([[-np.pi / 8, 0, 0], [-np.pi / 8, np.pi, 0], [0, 0, 0]])
-        self.offsets = np.array([[0, 2, 6], [0, 2, -8], [0, 0, -6]])
+        self.rotoffsets = np.array([[0, 0, 0], [-np.pi / 8, np.pi, 0], [0, 0, 0]])
+        self.offsets = np.array([[0, 1, 6], [0, 2, -8], [0, 0, -6]])
 
     def Update(self, obj: GameObject, dt: float):
         curOffset = self.offsets[self.viewIndex]
