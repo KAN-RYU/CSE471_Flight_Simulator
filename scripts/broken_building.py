@@ -45,7 +45,7 @@ class BrokenBuilding(GameObject):
             glPushMatrix()
             glColor3f(1.,1.,1.)
             glMultMatrixf(self.mat.T)
-            glBegin(GL_POLYGON)
+            glBegin(GL_TRIANGLES)
             dir = self.explosion_direction[i]
             for mesh in obj:
                 normal = mesh.normal

@@ -41,7 +41,7 @@ class Building(GameObject):
         glPushMatrix()
         glColor3f(1.,1.,1.)
         glMultMatrixf(self.mat.T)
-        glBegin(GL_POLYGON)
+        glBegin(GL_TRIANGLES)
         for mesh in self.meshes:
             normal = mesh.normal
             glNormal3f(*normal)
