@@ -171,7 +171,54 @@ class Scene:
         """
         # print(f"Display #{glutGetWindow()} special key event: key={key}, x={x}, y={y}")    
 
-
+    def pointCollisionWithTerrain(self, point):
+        ratio = 64 * Terrain.size / 5
+        x, y, z = point[0], point[1], point[2]
+        # print(x/Terrain.size, z/Terrain.size)
+        yLower = 0.5*Terrain.height*Terrain.size
+        if y < yLower:
+            return True
+        
+        xPos = x/Terrain.size + 64
+        zPos = z/Terrain.size + 64
+        xInd = np.floor(xPos)
+        zInd = np.floor(zPos)
+        if xInd < 0 or xInd > 128 or zInd < 0 or zInd > 128:
+            return False
+        
+        if xPos-xInd + zPos-zInd < 1:
+            ind = int(zInd*128 + xInd)
+            v1 = np.array([Terrain.verticesGlobal[ind*3], Terrain.verticesGlobal[ind*3+1], Terrain.verticesGlobal[ind*3+2]])
+            v2 = np.array([Terrain.verticesGlobal[(ind+128)*3], Terrain.verticesGlobal[(ind+128)*3+1], Terrain.verticesGlobal[(ind+128)*3+2]])
+            v3 = np.array([Terrain.verticesGlobal[(ind+1)*3], Terrain.verticesGlobal[(ind+1)*3+1], Terrain.verticesGlobal[(ind+1)*3+2]])
+            u = v2-v1
+            v = v3-v1
+            norm = np.cross(u, v)
+            norm = norm / np.linalg.norm(norm)
+            
+            xV = point - v1
+            if np.dot(norm, xV) <= 0:
+                return True
+            else:
+                return False
+        else:
+            ind = int(zInd*128 + xInd)
+            v1 = np.array([Terrain.verticesGlobal[(ind+1)*3], Terrain.verticesGlobal[(ind+1)*3+1], Terrain.verticesGlobal[(ind+1)*3+2]])
+            v2 = np.array([Terrain.verticesGlobal[(ind+128)*3], Terrain.verticesGlobal[(ind+128)*3+1], Terrain.verticesGlobal[(ind+128)*3+2]])
+            v3 = np.array([Terrain.verticesGlobal[(ind+129)*3], Terrain.verticesGlobal[(ind+129)*3+1], Terrain.verticesGlobal[(ind+129)*3+2]])
+            u = v2-v1
+            v = v3-v1
+            norm = np.cross(u, v)
+            norm = norm / np.linalg.norm(norm)
+            
+            xV = point - v1
+            if np.dot(norm, xV) <= 0:
+                return True
+            else:
+                return False
+            
+        
+        
     def update(self, dt):
         """
         Update callback function.
@@ -180,7 +227,34 @@ class Scene:
             obj.update(dt)
 
         Scene.time += dt
-        if(collide(self.airplane_BV, self.terrain_BV, self.objects[1].position)):
+        
+        planeCollisionFlag = False
+        ratio = 64 * Terrain.size / 5
+        plane_pos = self.objects[1].position
+        
+        head_pos = plane_pos + np.array([0,0,-1])
+        # print((head_pos[0]/ratio, head_pos[2]/ratio))
+        if self.pointCollisionWithTerrain(head_pos):
+            print('head')
+            planeCollisionFlag = True
+        
+        rightwing_pos = plane_pos + np.array([2.5,0,-0.5])
+        if self.pointCollisionWithTerrain(rightwing_pos):
+            print('right')
+            planeCollisionFlag = True
+        
+        leftwing_pos = plane_pos + np.array([-2.5,0,-0.5])
+        if self.pointCollisionWithTerrain(leftwing_pos):
+            print('left')
+            planeCollisionFlag = True
+                
+        back_pos = plane_pos + np.array([0,0,2])
+        if self.pointCollisionWithTerrain(back_pos):
+            print('back')
+            planeCollisionFlag = True
+                
+        # if(collide(self.airplane_BV, self.terrain_BV, self.objects[1].position)):
+        if planeCollisionFlag:
             print("WASTED!!")
             print("Exit the program!")
             glutDestroyWindow(self.mainWindow)
@@ -202,7 +276,6 @@ class Scene:
                 continue
             
             # Collide with Terrain
-            ratio = 64 * Terrain.size / 5
             if y < Terrain.interp(x/ratio, z/ratio)*Terrain.height*Terrain.size:
                 delete_list_missile.append(missile)
                 self.objects.remove(missile)

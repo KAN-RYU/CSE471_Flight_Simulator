@@ -25,6 +25,7 @@ class Terrain(GameObject):
     size = 10
     height = 5
     interp: RectBivariateSpline
+    verticesGlobal: np.ndarray
     def __init__(self, position=np.zeros(3), rotation=np.zeros(3), scale=np.ones(3), resolution=128, divide=8, size=10, height=5):
         super().__init__(position, rotation, scale)
         np.random.seed(int(time()))
@@ -34,6 +35,7 @@ class Terrain(GameObject):
         noise = generate_fractal_noise_2d(shape=(resolution, resolution), res=(r, r), octaves=5, persistence=0.5)
         noise = apply_gradient_map(noise, rate=0.3)
         self.vertices = get_terrain_vertices_array(noise, height) * size
+        Terrain.verticesGlobal = self.vertices
         self.normals = get_terrain_normal_array(self.vertices)
         self.indices = get_tri_indices_array(resolution)
         self.colors = get_color_array(noise)

@@ -121,7 +121,7 @@ def get_color_array(noise: np.ndarray) -> np.ndarray:
 
 def get_texture_array_interp(noise: np.ndarray, texs: List[np.ndarray], lerpCon: List[float]) -> np.ndarray:
     result = np.zeros((1024,1024,3), dtype='float32')
-    interpolate_spline = RectBivariateSpline(np.linspace(-5, 5, noise.shape[0]), np.linspace(-5, 5, noise.shape[1]), noise)
+    interpolate_spline = RectBivariateSpline(np.linspace(-5, 5, noise.shape[0]), np.linspace(-5, 5, noise.shape[1]), noise, kx=1, ky=1)
     
     new_z = interpolate_spline(np.linspace(-5, 5, 1024), np.linspace(-5, 5, 1024))
     for i in range(len(lerpCon)):
