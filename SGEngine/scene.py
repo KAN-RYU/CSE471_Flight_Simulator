@@ -194,10 +194,20 @@ class Scene:
         xzLimit = 100*Terrain.size
         for missile in self.missiles:
             x,y,z = missile.pos+missile.init_pos
+            
+            # Out of Bound
             if y > yUpper or y < yLower or x > xzLimit or x < -xzLimit or z > xzLimit or z < -xzLimit:
                 delete_list_missile.append(missile)
                 self.objects.remove(missile)
                 continue
+            
+            # Collide with Terrain
+            ratio = 64 * Terrain.size / 5
+            if y < Terrain.interp(x/ratio, z/ratio)*Terrain.height*Terrain.size:
+                delete_list_missile.append(missile)
+                self.objects.remove(missile)
+                continue
+            
             for building in self.building_BV:
                 bv, offset, build = building
                 if collide_missile(missile.pos + missile.init_pos, bv, offset):

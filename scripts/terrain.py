@@ -24,6 +24,7 @@ snowTexArray = np.array(snowTex)
 class Terrain(GameObject):
     size = 10
     height = 5
+    interp: RectBivariateSpline
     def __init__(self, position=np.zeros(3), rotation=np.zeros(3), scale=np.ones(3), resolution=128, divide=8, size=10, height=5):
         super().__init__(position, rotation, scale)
         np.random.seed(int(time()))
@@ -37,7 +38,7 @@ class Terrain(GameObject):
         self.indices = get_tri_indices_array(resolution)
         self.colors = get_color_array(noise)
         lerpCondition = np.array([0.2, 0.6, 1.0, 1.6])
-        self.tex = get_texture_array(noise, [rockTexArray, dirtTexArray, grassTexArray, snowTexArray], lerpCon=lerpCondition)
+        self.tex, Terrain.interp = get_texture_array_interp(noise, [rockTexArray, dirtTexArray, grassTexArray, snowTexArray], lerpCon=lerpCondition)
         # Image.fromarray((self.tex*255).astype(np.uint8), mode="RGB").show()
         x, y = np.meshgrid(np.linspace(0, 1, resolution), np.linspace(0, 1, resolution))
         self.texCoord = np.stack([x,y], axis=2).flatten()
