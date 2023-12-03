@@ -1,12 +1,12 @@
 from OpenGL.GL import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
-import numpy as np
-import time as t
 from SGEngine.gameobject import *
 from SGEngine.camera import Camera
 from SGEngine.model import Model
 from SGEngine.skybox import Skybox
+import numpy as np
+import time as t
 
 class Scene:
     time = 0
@@ -32,9 +32,11 @@ class Scene:
         """
         Light used in the scene.
         """
-        glEnable(GL_COLOR_MATERIAL)
         glEnable(GL_LIGHTING)
+        glEnable(GL_LIGHT0)
+        glEnable(GL_COLOR_MATERIAL)
         glEnable(GL_DEPTH_TEST)
+        glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE)
 
         # feel free to adjust light colors
         lightAmbient = [0.5, 0.5, 0.5, 1.0]
@@ -45,7 +47,6 @@ class Scene:
         glLightfv(GL_LIGHT0, GL_DIFFUSE, lightDiffuse)
         glLightfv(GL_LIGHT0, GL_SPECULAR, lightSpecular)
         glLightfv(GL_LIGHT0, GL_POSITION, lightPosition)
-        glEnable(GL_LIGHT0)
 
     def display(self):
         """
@@ -53,7 +54,7 @@ class Scene:
         """
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         glClearColor(0, 0, 0, 1)
-        
+
         self.drawScene()
 
         glutSwapBuffers()
@@ -152,9 +153,10 @@ class Scene:
         if self.prev_time != 0:
             dt = current_time - self.prev_time
 
-            self.update(dt)
+            self.update(1/60)
 
             glutPostRedisplay()
+
         self.prev_time = current_time
         glutTimerFunc(1000//60, self.timer, 0)
 
@@ -194,11 +196,12 @@ class Scene:
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         glUseProgram(0)
 
+        self.light()
+
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
         if self.camera_obj is not None:
             gluPerspective(self.camera.fov, self.width / self.height, self.camera.near, self.camera.far)
-
         glMatrixMode(GL_MODELVIEW)
         glLoadIdentity()
         if self.camera_obj is not None:

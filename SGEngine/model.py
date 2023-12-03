@@ -2,8 +2,6 @@ from OpenGL.GL import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
 from SGEngine.objloader import OBJ
-import ctypes
-import pywavefront
 
 class Model:
     def __init__(self, path):
@@ -13,6 +11,10 @@ class Model:
         self.obj = OBJ(path)
 
     def draw(self):
-        glRotatef(-90, 1, 0, 0)
-        glRotatef(90, 0, 0, 1)
+        glTranslatef(-3, -1.5, 1)
+        glRotatef(180, 0, 1, 0)
+        glScale(0.5, 0.5, 0.5)
         self.obj.render()
+        # glRotatef(-90, 1, 0, 0)
+        # glRotatef(90, 0, 0, 1)
+        # self.obj.render()

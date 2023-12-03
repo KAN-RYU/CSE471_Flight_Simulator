@@ -108,6 +108,8 @@ class OBJ:
             if 'texture_Kd' in mtl:
                 # use diffuse texmap
                 glBindTexture(GL_TEXTURE_2D, mtl['texture_Kd'])
+            elif 'texture_Ka' in mtl:
+                glBindTexture(GL_TEXTURE_2D, mtl['texture_Ka'])
             else:
                 # just use diffuse colour
                 glColor(*mtl['Kd'])

@@ -5,7 +5,10 @@ from SGEngine.quaternion import *
 import numpy as np
 
 def calculateDragCoef(x):
-    return 20 / (1 + np.exp(-1 * x))
+    return np.max([0, np.min([1, 100 / (1 + np.exp(-0.0004 * x)) - 50])])
+
+def calculateDragCoef2(x):
+    return np.max([0, np.min([2, 200 / (1 + np.exp(-0.0004 * x)) - 100])])
 
 def calculateLiftCoef(x):
     if x > 90 or x < -90:
@@ -16,7 +19,7 @@ def calculateSteeringCoef(x):
     return 0.1 / (1 + np.exp(-1 * x))
 
 def getScale6(value: np.ndarray(3), posX, negX, posY, negY, posZ, negZ) -> np.ndarray(3):
-    result = value
+    result = np.array(value)
 
     if result[0] > 0:
         result[0] = posX
@@ -44,23 +47,20 @@ class AirplaneController(Script):
         self.vInput = 0
         self.zInput = 0
         self.rollInput = 0
-        self.liftPower = 50
-        self.rudderPower = 10
-        self.inducedDrag = 1
-        self.airBrakeDrag = 10
-        self.flapsDrag = 10
-        self.flapsLiftPower = 20
-        self.flapsAoaBias = 5
+        self.liftPower = 200
+        self.rudderPower = 150
+        self.inducedDrag = 75
+        self.airBrakeDrag = 5
+        self.flapsDrag = 5
+        self.flapsLiftPower = 150
+        self.flapsAoaBias = 0.5
         self.airBrakeEnabled = False
-        self.flapsEnabled = False
-        self.turnSpeed = np.array([60, 30, 60])
-        self.turnAcceleration = np.array([60, 30, 60])
+        self.flapsEnabled = True
+        self.turnSpeed = np.array([30, 15, 270])
+        self.turnAcceleration = np.array([180, 180, 540])
 
-        self.velocity = np.zeros(3)
-        self.lastVelocity = np.zeros(3)
         self.localVelocity = np.zeros(3)
         self.localAngularVelocity = np.zeros(3)
-        self.localGForce = np.zeros(3)
 
         self.aoa = 0
         self.aoa_yaw = 0
@@ -73,15 +73,15 @@ class AirplaneController(Script):
             self.rb = rb
 
     def Update(self, gameObject: GameObject, dt: float):
-        print(self.object.position)
+        # print(self.object.position)
         self.CalculateState(dt)
         self.CalculateAoA()
-        self.calculateGForce(dt)
 
         self.updateThrust()
-        self.updateDrag()
         self.updateLift()
         self.updateSteering(dt)
+
+        self.updateDrag()
 
     def Keyboard(self, gameObject: GameObject, key: int, x: int, y: int):
         if key == b'w':
@@ -127,16 +127,8 @@ class AirplaneController(Script):
             self.aoa = 0
             self.aoa_yaw = 0
             return
-
-        self.aoa = np.arctan2(-self.localVelocity[1], self.localVelocity[2])
-        self.aoa_yaw = np.arctan2(self.localVelocity[0], self.localVelocity[2])
-
-    def calculateGForce(self, dt):
-        rotationMat = self.rb.rotation.to_rotation_matrix()
-        invRotationMat = np.linalg.inv(rotationMat)
-        acceleration = (self.velocity - self.lastVelocity) / dt
-        self.localGForce = (invRotationMat @ np.append(acceleration, [0]))[:3]
-        self.lastVelocity = self.velocity
+        self.aoa = np.arctan2(self.localVelocity[1], -self.localVelocity[2])
+        self.aoa_yaw = np.arctan2(-self.localVelocity[0], -self.localVelocity[2])
 
     def calculateLift(self, aoa, rightAxis, liftPower):
         liftVelocity = self.localVelocity - np.dot(self.localVelocity, rightAxis) * rightAxis
@@ -165,28 +157,28 @@ class AirplaneController(Script):
         return np.min([np.max([error, -accel]), accel])
 
     def updateThrust(self):
-        self.rb.applyRelativeForce(np.array([0, 0, -self.zInput * 10000]))
+        self.rb.applyRelativeForce(np.array([0, 0, -self.zInput * 200000]))
 
     def updateDrag(self):
         lv = self.localVelocity
         lvsq = np.linalg.norm(lv) ** 2 
-        lv_normalized = lv
+        lv_normalized = np.array(lv)
         if np.linalg.norm(lv_normalized) > 0:
-            lv_normalized = lv_normalized / np.linalg.norm(lv_normalized)
+            lv_normalized /= np.linalg.norm(lv_normalized)
 
         airbrakeDrag = self.airBrakeEnabled * self.airBrakeDrag
         flapsDrag = self.flapsEnabled * self.flapsDrag
 
         coef = getScale6(lv_normalized, 
-                         calculateDragCoef(np.abs(lv[0])), 
-                         calculateDragCoef(np.abs(lv[0])), 
-                         calculateDragCoef(np.abs(lv[1])), 
-                         calculateDragCoef(np.abs(lv[1])), 
-                         calculateDragCoef(np.abs(lv[2])) + airbrakeDrag + flapsDrag, 
-                         calculateDragCoef(np.abs(lv[2])))
+                         calculateDragCoef2(np.abs(lv[0])), 
+                         calculateDragCoef2(np.abs(lv[0])), 
+                         calculateDragCoef2(np.abs(lv[1])), 
+                         calculateDragCoef2(np.abs(lv[1])), 
+                         calculateDragCoef2(np.abs(lv[2])), 
+                         calculateDragCoef(np.abs(lv[2])) + airbrakeDrag + flapsDrag)
 
         drag = np.linalg.norm(coef) * lvsq
-        dragDir = lv
+        dragDir = lv_normalized
         if np.linalg.norm(dragDir) > 0:
             dragDir = dragDir / np.linalg.norm(dragDir)
         self.rb.applyRelativeForce(-dragDir * drag)
