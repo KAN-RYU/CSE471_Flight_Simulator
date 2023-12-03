@@ -54,6 +54,13 @@ class OBJ:
         self.faces = []
         self.gl_list = 0
         dirname = os.path.dirname(filename)
+        
+        minX = 999
+        minY = 999
+        minZ = 999
+        maxX = -999
+        maxY = -999
+        maxZ = -999
 
         material = None
         for line in open(filename, "r"):
@@ -65,6 +72,13 @@ class OBJ:
                 if swapyz:
                     v = v[0], v[2], v[1]
                 self.vertices.append(v)
+                # adjust center
+                minX = min(minX, v[0])
+                minY = min(minY, v[1])
+                minZ = min(minZ, v[2])
+                maxX = max(maxX, v[0])
+                maxY = max(maxY, v[1])
+                maxZ = max(maxZ, v[2])
             elif values[0] == 'vn':
                 v = list(map(float, values[1:4]))
                 if swapyz:
@@ -92,6 +106,14 @@ class OBJ:
                     else:
                         norms.append(0)
                 self.faces.append((face, norms, texcoords, material))
+        
+        centerX = (minX+maxX)/2
+        centerY = (minY+maxY)/2
+        centerZ = (minZ+maxZ)/2
+        for v in self.vertices:
+            v[0] -= centerX
+            v[1] -= centerY
+            v[2] -= centerZ
         if generate_on_init:
             self.generate()
 
