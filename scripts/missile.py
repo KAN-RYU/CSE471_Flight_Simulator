@@ -47,7 +47,7 @@ class Missile(GameObject):
 
     def drawSelf(self):
         glPushMatrix()
-        glColor3f(1.,1.,1.)
+        glColor3f(0.62, 0.165, 0)
         glMultMatrixf(np.identity(4))
         glBegin(GL_POLYGON)
         for mesh in self.meshes:

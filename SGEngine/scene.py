@@ -12,6 +12,8 @@ from scripts.broken_building import *
 import numpy as np
 import time as t
 
+from scripts.terrain import Terrain
+
 class Scene:
     time = 0
 
@@ -183,11 +185,16 @@ class Scene:
             print("Exit the program!")
             glutDestroyWindow(self.mainWindow)
             exit()
+        
+        # missile collision
         delete_list_missile = []
         delete_list_building = []
+        yUpper = 5000
+        yLower = 0.5*Terrain.height*Terrain.size
+        xzLimit = 100*Terrain.size
         for missile in self.missiles:
-            x,y,z = missile.pos
-            if y > 400 or y < -200 or x> 500 or x < -500 or z>500 or z<-500:
+            x,y,z = missile.pos+missile.init_pos
+            if y > yUpper or y < yLower or x > xzLimit or x < -xzLimit or z > xzLimit or z < -xzLimit:
                 delete_list_missile.append(missile)
                 self.objects.remove(missile)
                 continue

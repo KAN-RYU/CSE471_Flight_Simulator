@@ -22,11 +22,13 @@ grassTexArray = np.array(grassTex)
 snowTexArray = np.array(snowTex)
 
 class Terrain(GameObject):
+    size = 10
+    height = 5
     def __init__(self, position=np.zeros(3), rotation=np.zeros(3), scale=np.ones(3), resolution=128, divide=8, size=10, height=5):
         super().__init__(position, rotation, scale)
         np.random.seed(int(time()))
-        self.size = size
-        self.height = height
+        Terrain.size = size
+        Terrain.height = height
         r = divide
         noise = generate_fractal_noise_2d(shape=(resolution, resolution), res=(r, r), octaves=5, persistence=0.5)
         noise = apply_gradient_map(noise, rate=0.3)
@@ -39,7 +41,7 @@ class Terrain(GameObject):
         # Image.fromarray((self.tex*255).astype(np.uint8), mode="RGB").show()
         x, y = np.meshgrid(np.linspace(0, 1, resolution), np.linspace(0, 1, resolution))
         self.texCoord = np.stack([x,y], axis=2).flatten()
-        print(self.texCoord[:6])
+        print(self.vertices[:3])
         
         self.texid =  None
         
@@ -76,7 +78,7 @@ class Terrain(GameObject):
                  [-100, 0.0, -100],
                  [100, 0.0, -100],]
         floor = np.array(floor)
-        floor = floor * self.size
+        floor = floor * Terrain.size
         glPushMatrix()
         glColor3f(0.6, 0.5, 0.2)
         glMultMatrixd(self.worldMat.T)
@@ -87,12 +89,12 @@ class Terrain(GameObject):
         glEnd()
         glPopMatrix()
         
-        water = [[100, 0.5*self.height, 100],
-                 [-100, 0.5*self.height, 100],
-                 [-100, 0.5*self.height, -100],
-                 [100, 0.5*self.height, -100],]
+        water = [[100, 0.5*Terrain.height, 100],
+                 [-100, 0.5*Terrain.height, 100],
+                 [-100, 0.5*Terrain.height, -100],
+                 [100, 0.5*Terrain.height, -100],]
         water = np.array(water)
-        water = water * self.size
+        water = water * Terrain.size
         glEnable(GL_BLEND)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
         glPushMatrix()
