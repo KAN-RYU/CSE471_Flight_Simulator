@@ -186,6 +186,11 @@ class Scene:
         delete_list_missile = []
         delete_list_building = []
         for missile in self.missiles:
+            x,y,z = missile.pos
+            if y > 400 or y < -200 or x> 500 or x < -500 or z>500 or z<-500:
+                delete_list_missile.append(missile)
+                self.objects.remove(missile)
+                continue
             for building in self.building_BV:
                 bv, offset, build = building
                 if collide_missile(missile.pos + missile.init_pos, bv, offset):
