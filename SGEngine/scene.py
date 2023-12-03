@@ -147,7 +147,7 @@ class Scene:
             airplane = self.objects[1]
             if airplane:
                 rb = airplane.rb
-                missile = Missile(velocity = rb.velocity, position=airplane.position, rotation = np.array(airplane.rotation.to_euler()))
+                missile = Missile(velocity = rb.velocity, position=airplane.position+np.array([0,-1.0,0]), rotation = np.array(airplane.rotation.to_euler()))
                 self.addObject(missile)
                 self.missiles.append(missile)
 
@@ -183,7 +183,7 @@ class Scene:
         zPos = z/Terrain.size + 64
         xInd = np.floor(xPos)
         zInd = np.floor(zPos)
-        if xInd < 0 or xInd > 128 or zInd < 0 or zInd > 128:
+        if xInd < 0 or xInd > 127 or zInd < 0 or zInd > 127:
             return False
         
         if xPos-xInd + zPos-zInd < 1:
@@ -229,7 +229,7 @@ class Scene:
         Scene.time += dt
         
         planeCollisionFlag = False
-        ratio = 64 * Terrain.size / 5
+        
         plane_pos = self.objects[1].position
         
         head_pos = plane_pos + np.array([0,0,-1])
@@ -276,18 +276,20 @@ class Scene:
                 continue
             
             # Collide with Terrain
-            if y < Terrain.interp(x/ratio, z/ratio)*Terrain.height*Terrain.size:
+            if self.pointCollisionWithTerrain(missile.pos + missile.init_pos):
                 delete_list_missile.append(missile)
                 self.objects.remove(missile)
                 continue
             
             for building in self.building_BV:
+                # print('check')
                 bv, offset, build = building
                 if collide_missile(missile.pos + missile.init_pos, bv, offset):
                     self.objects[self.objects.index(build)] = BrokenBuilding(position=np.array([0.0, 0.0, 0.0]), rotation=np.array([0.0, 0.0, 0.0]), init_pos=offset)
                     delete_list_missile.append(missile)
                     delete_list_building.append(building)
                     self.objects.remove(missile)
+            # print('check done')
         for i in range(len(delete_list_building)):
             self.building_BV.remove(delete_list_building[i])
         self.missiles = list(set(self.missiles) - set(delete_list_missile))

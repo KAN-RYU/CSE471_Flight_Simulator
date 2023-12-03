@@ -41,8 +41,12 @@ class BrokenBuilding(GameObject):
         self.mat = self.getLocalMat().copy()
         self.init_pos = init_pos
         self.explosion_direction = (np.random.rand(len(objects), 3) - 0.5) * 5
+        self.timer = 10
+        self.Flag = False
 
     def drawSelf(self):
+        if self.Flag:
+            return
         for i, obj in enumerate(self.objects):
             glPushMatrix()
             glColor3f(1.,1.,1.)
@@ -59,5 +63,13 @@ class BrokenBuilding(GameObject):
         
 
     def update(self, dt):
+        if self.Flag:
+            return
         self.explosion_direction += dt * self.explosion_direction
+        self.explosion_direction += np.array([0, -0.1, 0])
+        if self.timer > 0:
+            self.timer -= dt
+        else:
+            self.Flag = True
+            
         pass

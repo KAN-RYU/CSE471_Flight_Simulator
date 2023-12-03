@@ -12,7 +12,7 @@ import numpy as np
 
 if __name__ == "__main__":
     mainScene = Scene(1280, 720)
-    airplane = Airplane(position=np.array([0.0, 1000.0, 0.0]), rotation=np.array([0.0, 0.0, 0.0]))
+    airplane = Airplane(position=np.array([2200, 1000.0, 2200]), rotation=np.array([0.0, np.pi/4, 0.0]))
     mainScene.setAirplane(airplane)
     
     size = 35
@@ -39,10 +39,18 @@ if __name__ == "__main__":
     
     # sphere4 = Sphere(np.array([0,0,2]), np.zeros(3), np.ones(3)*0.1)
     # airplane.addChild(sphere4)
+    ratio = 64 * Terrain.size / 5
+    def buildingInitPos(x, z):
+        xPos = x/Terrain.size + 64
+        zPos = z/Terrain.size + 64
+        xInd = np.floor(xPos)
+        zInd = np.floor(zPos)
+        ind = int(zInd*128 + xInd)
+        return np.array([x, Terrain.verticesGlobal[ind*3+1] - 5, z])
 
-    building1 = Building(position=np.array([0.0, 0.0, 0.0]), rotation=np.array([0.0, 0.0, 0.0]), init_pos = np.array([0,-7,-200]))
-    building2 = Building(position=np.array([0.0, 0.0, 0.0]), rotation=np.array([0.0, 0.0, 0.0]), init_pos = np.array([50,-7,200]))
-    building3 = Building(position=np.array([0.0, 0.0, 0.0]), rotation=np.array([0.0, 0.0, 0.0]), init_pos = np.array([200,-7,-50]))
+    building1 = Building(position=np.array([0.0, 0.0, 0.0]), rotation=np.array([0.0, 0.0, 0.0]), init_pos = buildingInitPos(0, 200))
+    building2 = Building(position=np.array([0.0, 0.0, 0.0]), rotation=np.array([0.0, 0.0, 0.0]), init_pos = buildingInitPos(-500, 700))
+    building3 = Building(position=np.array([0.0, 0.0, 0.0]), rotation=np.array([0.0, 0.0, 0.0]), init_pos = buildingInitPos(1200, 1200))
 
     mainScene.setBuilding(building1)
     mainScene.setBuilding(building2)
@@ -56,7 +64,6 @@ if __name__ == "__main__":
     mainScene.addObject(building3)
 
     mainScene.addObject(camera_obj)
-    
     
     mainScene.run()
 
