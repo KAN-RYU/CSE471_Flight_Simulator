@@ -27,7 +27,9 @@ for line in lines:
         edge1 = vertices[1] - vertices[0]
         edge2 = vertices[2] - vertices[0]
         normal = np.cross(edge1, edge2)
-        normal = normal / np.linalg.norm(normal) 
+        norm = np.linalg.norm(normal) 
+        if norm < 0.0000001: continue
+        normal = normal / norm
         mesh = Mesh(vertices, normal)
         meshes.append(mesh)
     
