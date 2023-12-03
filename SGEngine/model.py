@@ -8,7 +8,10 @@ class Model:
         self.loadModel(path)
 
     def loadModel(self, path):
-        self.obj = OBJ(path)
+        self.obj = OBJ(path, generate_on_init=False)
+
+    def generate(self):
+        self.obj.generate()
 
     def draw(self):
         glTranslatef(-3, -1.5, 1)

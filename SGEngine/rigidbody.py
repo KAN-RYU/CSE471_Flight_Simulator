@@ -61,10 +61,6 @@ class RigidBody(Component):
     def applyRelativeForce(self, force):
         self.force += self.object.getLocalVec(force)
 
-    def applyImpulse(self, impulse, point):
-        self.velocity += impulse / self.mass
-        self.angular_velocity += np.cross(point - self.position, impulse) / self.inertia
-
     def applyRelativeTorque(self, torque):
         self.torque += self.object.getLocalVec(torque)
     

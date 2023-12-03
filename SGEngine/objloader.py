@@ -6,7 +6,6 @@ from OpenGL.GL import *
 # Source code from https://github.com/yarolig/OBJFileLoader/blob/master/OBJFileLoader/objloader.py
 
 class OBJ:
-    generate_on_init = True
     @classmethod
     def loadTexture(cls, imagefile):
         surf = Image.open(imagefile)
@@ -47,7 +46,7 @@ class OBJ:
                 mtl[values[0]] = list(map(float, values[1:]))
         return contents
 
-    def __init__(self, filename, swapyz=False):
+    def __init__(self, filename, swapyz=False, generate_on_init=True):
         """Loads a Wavefront OBJ file. """
         self.vertices = []
         self.normals = []
@@ -93,7 +92,7 @@ class OBJ:
                     else:
                         norms.append(0)
                 self.faces.append((face, norms, texcoords, material))
-        if self.generate_on_init:
+        if generate_on_init:
             self.generate()
 
     def generate(self):

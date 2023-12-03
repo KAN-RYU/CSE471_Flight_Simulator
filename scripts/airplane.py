@@ -98,12 +98,8 @@ class AirplaneController(Script):
             self.hInput = -1
         if key == b'e':
             self.hInput = 1
-
         if key == b' ':
             self.airBrakeEnabled = True
-
-        if key == b'c':
-            self.flapsEnabled = not self.flapsEnabled
 
     def KeyboardUp(self, gameObject: GameObject, key: int, x: int, y: int):
         if key == b'w' or key == b's':

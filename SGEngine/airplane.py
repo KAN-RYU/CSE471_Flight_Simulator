@@ -9,11 +9,11 @@ class Airplane(GameObject):
         self.rb = RigidBody(mass=20000, inertia=np.array([[10, 0, 0], [0, 10, 0], [0, 0, 10]]), position=position, rotation=Quaternion.from_euler(*rotation))
         self.addComponent(self.rb)
         self.addComponent(AirplaneController())
+        self.model = Model("models/B17GREEN.obj")
 
     def init(self):
         super().init()
-        self.model = Model("models/B17GREEN.obj")
-        # self.model = Model("models/14082_WWII_Plane_Japan_Kawasaki_Ki-61_v1_L2.obj")
+        self.model.generate()
         
     def drawSelf(self):
         glPushMatrix()
