@@ -9,6 +9,7 @@ class Airplane(GameObject):
         self.rb = RigidBody(mass=100, inertia=np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]]), position=position, rotation=Quaternion.from_euler(*rotation))
         self.addComponent(self.rb)
         self.addComponent(AirplaneController())
+        self.model = Model("models/14082_WWII_Plane_Japan_Kawasaki_Ki-61_v1_L2.obj")
 
     def init(self):
         super().init()

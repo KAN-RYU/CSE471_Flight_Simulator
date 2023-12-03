@@ -5,8 +5,16 @@ import numpy as np
 import time as t
 from SGEngine.gameobject import *
 from SGEngine.camera import Camera
+from SGEngine.airplane import Airplane
 from SGEngine.model import Model
 from SGEngine.skybox import Skybox
+from scripts.missile import *
+from scripts.building import *
+from scripts.broken_building import *
+
+
+
+
 
 class Scene:
     time = 0
@@ -19,6 +27,28 @@ class Scene:
         self.prev_time = 0
 
         self.objects: list[GameObject] = []
+        self.terrain_BV = None
+        self.airplane_BV = None
+        self.building_BV = []
+        self.missiles = []
+
+    def setBuilding(self, building:Building):
+       self.building_BV.append([BVnode(building.meshes), building.init_pos, building])
+
+    def setAirplane(self, airplane:Airplane):
+       vertex = np.array(airplane.model.obj.vertices)
+       faces = airplane.model.obj.faces
+       indices = [np.array(face[0]) - 1 for face in faces]
+       vertices = [vertex[index] for index in indices]
+       meshes = [Mesh(vertices[i], None) for i in range(len(vertices))]
+       self.airplane_BV = BVnode(meshes)
+
+    def setTerrain(self, terrain):
+       vertices = terrain.vertices.reshape(-1,3)[terrain.indices.astype(np.int16)].reshape(-1,3,3)
+       meshes = [Mesh(vertices[i], None) for i in range(len(vertices))]
+       self.terrain_BV = BVnode(meshes)
+
+
 
     def setCamera(self, camera_obj:GameObject):
         self.camera_obj = camera_obj
@@ -116,6 +146,13 @@ class Scene:
             print("alt pressed")
         if glutGetModifiers() & GLUT_ACTIVE_CTRL:
             print("ctrl pressed")
+        if key == b'q':
+            airplane = self.objects[1]
+            if airplane:
+                rb = airplane.rb
+                missile = Missile(velocity = rb.velocity, position=airplane.position, rotation = np.array(airplane.rotation.to_euler()))
+                self.addObject(missile)
+                self.missiles.append(missile)
 
         for obj in self.objects:
             obj.keyboard(key, x, y)
@@ -146,6 +183,24 @@ class Scene:
             obj.update(dt)
 
         Scene.time += dt
+        if(collide(self.airplane_BV, self.terrain_BV, self.objects[1].position)):
+            print("WASTED!!")
+            print("Exit the program!")
+            glutDestroyWindow(self.mainWindow)
+            exit()
+        delete_list_missile = []
+        delete_list_building = []
+        for missile in self.missiles:
+            for building in self.building_BV:
+                bv, offset, build = building
+                if collide_missile(missile.pos + missile.init_pos, bv, offset):
+                    self.objects[self.objects.index(build)] = BrokenBuilding(position=np.array([0.0, 0.0, 0.0]), rotation=np.array([0.0, 0.0, 0.0]), init_pos=offset)
+                    delete_list_missile.append(missile)
+                    delete_list_building.append(building)
+                    self.objects.remove(missile)
+        for i in range(len(delete_list_building)):
+            self.building_BV.remove(delete_list_building[i])
+        self.missiles = list(set(self.missiles) - set(delete_list_missile))
 
     def timer(self, value):
         current_time = t.time()
@@ -210,6 +265,7 @@ class Scene:
         for obj in self.objects:
             obj.updateWorldMat()
             obj.draw()
+        
 
         self.drawAxes()
 
