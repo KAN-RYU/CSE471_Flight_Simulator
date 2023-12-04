@@ -2,6 +2,26 @@
 
 Simple flight simulator with OpenGL
 
+## How to run
+
+```bash
+#Installing Packages
+pip install -r ./requirements.txt
+
+#Run
+python ./main.py
+```
+
+## Control
+
+- Plane Control
+  - W/S : Pitch
+  - A/D : Roll
+  - Q/E : Yaw
+  - F : Engine Start/Stop
+  - Space : Air Brake
+  - L : Fire Missile
+
 ## Resources
 
 Missile Model
