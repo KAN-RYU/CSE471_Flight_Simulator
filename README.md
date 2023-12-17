@@ -22,6 +22,9 @@ python ./main.py
   - Space : Air Brake
   - L : Fire Missile
 
+## Video
+[![Video Label](http://img.youtube.com/vi/7woBQM9p4ko/0.jpg)](https://youtu.be/7woBQM9p4ko)
+
 ## Resources
 
 Missile Model
